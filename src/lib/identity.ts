@@ -145,7 +145,7 @@ export function workshopIdentity(
     desk = "split";
     fit = "split";
   }
-  if (fromHandle === "corp" && (pinnedLane === "cursed" || pinnedLane === "scene")) {
+  if (fromHandle === "brand" && (pinnedLane === "cursed" || pinnedLane === "scene")) {
     desk = "split";
     fit = "split";
   }
