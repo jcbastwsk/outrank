@@ -92,6 +92,34 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
     });
   }
 
+  if (f.format === "article") {
+    plays.push({
+      id: "article-lede",
+      urgency: "now",
+      title: "The first 200 characters are the post",
+      why: "Phoenix ranks a candidate, not your whole essay. If the lede is 'I wrote an article,' nobody clicks. A claim or an unfinished thought — then the body earns click (0.4) and dwell (0.004/s). Copy-link is how articles travel.",
+      source: "ClickWeight + ContDwellTimeWeight + ShareViaCopyLinkWeight",
+    });
+  }
+  if (f.format === "long" && !f.openLoop) {
+    plays.push({
+      id: "long-first-line",
+      urgency: "now",
+      title: "Line one has to work as a tweet",
+      why: "A long post still dies in the slate if the first line is throat-clearing. Same 48-hour AgeFilter as a 40-character joke.",
+      source: "AgeFilter 48h + first-candidate scoring",
+    });
+  }
+  if (f.format === "micro" && score.lane.id === "thin") {
+    plays.push({
+      id: "micro-or-essay",
+      urgency: "next",
+      title: "Either one breath or an article — not a soggy paragraph",
+      why: "Micro needs a loop or a wreck. Articles need a lede and dwell. The dead zone is 120 characters of advice with no ask.",
+      source: "Format prior",
+    });
+  }
+
   if (f.hasUrl) {
     plays.push({
       id: "link-in-reply",
@@ -223,7 +251,7 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
       why: "Fat-tail OC. Phoenix scores per viewer. Mutuals who have been eating your last 20 posts will reply. A cold OON viewer (×0.75) sees a fragment. Don't industrialize this. If you sell to operators, steal the one-breath shape — not the in-joke.",
       source: "OonWeightFactor 0.75 + per-viewer Phoenix",
     });
-    if (f.isLong) {
+    if (f.format === "micro" || f.format === "short") {
       plays.push({
         id: "scene-cut",
         urgency: "now",
@@ -417,6 +445,21 @@ export const SAMPLE_DRAFTS = [
   {
     label: "Cursed",
     text: "I all of my bit coins",
+  },
+  {
+    label: "Article",
+    text: `The feed is not a magazine. It's a slot machine that happens to rank essays if the first line slaps.
+
+Phoenix still only sees a candidate. Click 0.4. Dwell 0.004 a second. Copy-link 20. If your lede is "I wrote something," you already lost.
+
+I. The 48-hour window
+Same AgeFilter as a shitpost. Your 4,000 words die at hour 49.
+
+II. Who actually finishes
+Almost nobody. The people who copy the URL are the whole game.
+
+III. What to do
+Put the claim in sentence one. Body is for the few who click.`,
   },
   {
     label: "Soft take",

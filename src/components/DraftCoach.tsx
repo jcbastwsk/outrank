@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { coachDraft, SAMPLE_DRAFTS, type CoachResult } from "../lib/coach";
-import { scoreDraft } from "../lib/score";
+import { FORMAT_META, scoreDraft } from "../lib/score";
 import { VIBE_KEY, type VibeProfile } from "../lib/vibe";
 
 function gradeColor(g: string) {
@@ -48,7 +48,9 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
       <div className="card p-5">
         <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
           <span>Draft</span>
-          <span className="mono">{result.features.chars}/280+</span>
+          <span className="mono">
+            {FORMAT_META[result.format].label} · {result.features.chars}
+          </span>
         </div>
         <textarea
           value={text}
@@ -96,9 +98,8 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
             </p>
             <p className="mt-2 text-[11px] uppercase tracking-[0.14em] text-[var(--gold)]">
               {result.lane.label}
-              {result.tribe !== "none" && result.lane.label.toLowerCase() !== "milady"
-                ? ` · ${result.tribe}`
-                : ""}
+              {" · "}
+              {FORMAT_META[result.format].label}
             </p>
           </div>
           <div className="text-right text-xs text-[var(--muted)]">

@@ -23,6 +23,8 @@ export type DraftFeatures = {
   isShort: boolean;
   isLong: boolean;
   isEmpty: boolean;
+  format: FormatId;
+  paragraphs: number;
   /** Unfinished claim that begs "wait, what?" — the NK tweet shape. */
   openLoop: boolean;
   hedged: boolean;
@@ -40,6 +42,16 @@ export type DraftFeatures = {
   aiReel: boolean;
   tribe: TribeId;
   costume: boolean;
+};
+
+export type FormatId = "micro" | "short" | "long" | "article" | "thread";
+
+export const FORMAT_META: Record<FormatId, { label: string; blurb: string }> = {
+  micro: { label: "Micro", blurb: "One breath. Reply/quote or it dies." },
+  short: { label: "Short", blurb: "Classic tweet. Hook in the first line." },
+  long: { label: "Long", blurb: "Feed-native essay. First 200 characters are the post." },
+  article: { label: "Article", blurb: "Click + dwell + copy-link. The headline is the candidate." },
+  thread: { label: "Thread", blurb: "Tweet 1 is what Phoenix ranks. The rest is optional." },
 };
 
 export type TribeId = "none" | "milady";
@@ -90,6 +102,7 @@ export type ScoreResult = {
   grade: "F" | "D" | "C" | "B" | "A" | "S";
   lane: Lane;
   tribe: TribeId;
+  format: FormatId;
   headline: string;
   disclaimer: string;
 };
@@ -150,7 +163,7 @@ const AI_TOOL =
   /(midjourney|runway|kling|sora|veo\b|luma|pika|comfyui|comfy ui|stable diffusion|\bflux\b|higgsfield|hailuo|minimax|hunyuan|wan\b|seedance|dream machine|elevenlabs)/i;
 
 const CINEMA_LEX =
-  /(cinematic|short film|ai film|ai cinema|ai art|teaser|trailer|\bstill\b|keyframe|color grade|anamorphic|no crew|no camera|generations?|the prompt|ai slop|this is ai|made with ai)/i;
+  /(cinematic|short film|ai film|ai cinema|ai art|teaser|trailer|keyframe|color grade|anamorphic|no crew|no camera|generations?|the prompt|ai slop|this is ai|made with ai|(a|the) still)/i;
 
 const MILADY =
   /\b(milady|miladies|remilia|radbro|radbros|very milady|gm milady|gn milady)\b/i;
@@ -199,6 +212,23 @@ export function extractFeatures(text: string): DraftFeatures {
   const hasQuestion = /\?/.test(t);
   const isShort = t.length > 0 && t.length < 90;
   const isEmpty = t.length < 8;
+  const paragraphs = t.split(/\n\s*\n/).filter((p) => p.trim().length > 0).length;
+  const threadCue = /(^\s*1\/|\bthread\b|a few thoughts|let me explain)/im.test(t);
+  const articleCue =
+    paragraphs >= 5 ||
+    t.length > 1500 ||
+    /(^#{1,3}\s|i wrote (an? )?(essay|article|piece)|read the (rest|full)|full (essay|article))/im.test(
+      t,
+    );
+  const format: FormatId = threadCue
+    ? "thread"
+    : articleCue
+      ? "article"
+      : t.length > 400
+        ? "long"
+        : t.length >= 90
+          ? "short"
+          : "micro";
   const hasUrl = /https?:\/\/|www\./i.test(t);
   const openLoop = OPEN_LOOP.test(t);
   const hedged = HEDGED.test(t);
@@ -263,12 +293,14 @@ export function extractFeatures(text: string): DraftFeatures {
       /\b(idiot|stupid|clown|destroyed|ratio)\b|you won'?t believe|\bwake up\b/i.test(
         t,
       ),
-    threadCue: /(^\s*1\/|\bthread\b|a few thoughts|let me explain)/i.test(t),
+    threadCue,
     mediaCue: /\[(image|video|photo|gif)\]|\.(png|jpg|gif|mp4)\b/i.test(t),
     allCapsTokens: (t.match(/\b[A-Z]{4,}\b/g) ?? []).length,
     isShort,
     isLong: t.length > 220,
     isEmpty,
+    format,
+    paragraphs,
     openLoop,
     hedged,
     firstPerson,
@@ -512,7 +544,28 @@ export function estimateProbabilities(
     p.favorite += 0.015;
     p.contDwellTime += 4;
   }
-  if (f.isLong && !f.hasUrl) {
+  if (f.format === "long" && !f.hasUrl) {
+    p.contDwellTime += 10;
+    p.dwell += 0.1;
+    p.click += 0.05;
+    p.shareViaCopyLink += 0.015;
+    p.notDwelled -= 0.08;
+  }
+  if (f.format === "article") {
+    p.click += 0.12;
+    p.contDwellTime += 18;
+    p.dwell += 0.12;
+    p.shareViaCopyLink += 0.03;
+    p.shareViaDm += 0.01;
+    p.reply -= 0.01;
+    p.notDwelled -= 0.1;
+  }
+  if (f.format === "thread") {
+    p.click += 0.06;
+    p.contDwellTime += 12;
+    p.dwell += 0.08;
+  }
+  if (f.isLong && !f.hasUrl && f.format === "short") {
     p.contDwellTime += 8;
     p.dwell += 0.08;
     p.notDwelled -= 0.07;
@@ -653,6 +706,7 @@ export function scoreDraft(text: string): ScoreResult {
     features,
     lane,
     tribe,
+    format: features.format,
     actions,
     rawScore,
     reach,
