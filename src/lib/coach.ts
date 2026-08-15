@@ -111,7 +111,27 @@ export function coachDraft(score: ScoreResult): CoachResult {
     }
   }
 
-  if (score.lane.id === "scene" || f.openLoop || f.deadpan) {
+  if (score.lane.id === "cursed" || f.cursed) {
+    plays.push({
+      id: "cursed-keep",
+      urgency: "now",
+      title: "Do not fix the grammar",
+      why: "The wreck is the hook. “I all of my bit coins” gets quotes because it looks like a real person just ate glass. Correct it and it's a sad finance tweet.",
+      source: "QuoteWeight + ReplyWeight — cursed prior",
+    });
+  }
+
+  if (score.lane.id === "volatile" || f.hateRisk) {
+    plays.push({
+      id: "volatile-no",
+      urgency: "never",
+      title: "We will not help you tune this",
+      why: `Slur-bait can print replies. It also prints reports. ReportWeight is ${ACTION_WEIGHTS.report}. One report wipes ~${Math.abs(likeEquivalent(ACTION_WEIGHTS.report)).toFixed(0)} likes. The posts that “fly” are the ones that didn't get reported — the published formula cannot tell you which. Stay out of this lane on purpose.`,
+      source: "ReportWeight / MuteAuthorWeight",
+    });
+  }
+
+  if ((score.lane.id === "scene" || f.openLoop || f.deadpan) && !f.cursed && !f.hateRisk) {
     plays.push({
       id: "keep-loop",
       urgency: "now",
@@ -136,6 +156,8 @@ export function coachDraft(score: ScoreResult): CoachResult {
     !f.openLoop &&
     !f.deadpan &&
     !f.operator &&
+    !f.cursed &&
+    !f.hateRisk &&
     !f.isEmpty
   ) {
     plays.push({
@@ -147,7 +169,15 @@ export function coachDraft(score: ScoreResult): CoachResult {
     });
   }
 
-  if (!f.shareable && !f.openLoop && !f.deadpan && !f.operator && !f.isEmpty) {
+  if (
+    !f.shareable &&
+    !f.openLoop &&
+    !f.deadpan &&
+    !f.operator &&
+    !f.cursed &&
+    !f.hateRisk &&
+    !f.isEmpty
+  ) {
     plays.push({
       id: "make-portable",
       urgency: "now",
@@ -195,6 +225,8 @@ export function coachDraft(score: ScoreResult): CoachResult {
     !f.deadpan &&
     !f.operator &&
     !f.scene &&
+    !f.cursed &&
+    !f.hateRisk &&
     !f.isEmpty
   ) {
     plays.push({
@@ -283,6 +315,10 @@ export const SAMPLE_DRAFTS = [
   {
     label: "Open loop",
     text: "I'm pretty sure I was lied to big time about N Korea",
+  },
+  {
+    label: "Cursed",
+    text: "I all of my bit coins",
   },
   {
     label: "Soft take",

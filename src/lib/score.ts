@@ -35,9 +35,19 @@ export type DraftFeatures = {
   announce: boolean;
   listicle: boolean;
   lowercaseVoice: boolean;
+  cursed: boolean;
+  hateRisk: boolean;
 };
 
-export type LaneId = "operator" | "scene" | "portable" | "thin" | "spam" | "empty";
+export type LaneId =
+  | "operator"
+  | "scene"
+  | "cursed"
+  | "volatile"
+  | "portable"
+  | "thin"
+  | "spam"
+  | "empty";
 
 export type Lane = {
   id: LaneId;
@@ -121,6 +131,34 @@ const LISTICLE = /(^\s*\d+[\.\)\/]|^\s*[-–•]\s|lessons I|things I wish|a few
 const SCENE_VOICE =
   /(so over|so back|real ones know|this is not a bit|once you see it|the pattern is|they will not|they don't want|nobody is ready|it's happening|its happening|not a coincidence|wake up but)/i;
 
+/** Toddler grammar / missing verb / split compounds. "I all of my bit coins" */
+const CURSED =
+  /\b(i all of my|i my |i the |i so much|bit coins|face book|you tube|i phone|all of my coin|lose all my|lost all my)\b/i;
+
+function looksBrokenSyntax(t: string): boolean {
+  if (CURSED.test(t)) return true;
+  const words = t.toLowerCase().match(/[a-z']+/g) ?? [];
+  if (words.length < 3 || words.length > 14) return false;
+  const verbs = new Set([
+    "am","is","are","was","were","be","been","being","have","has","had",
+    "do","did","does","lost","lose","sold","bought","got","get","went",
+    "think","know","see","saw","said","say","want","need","feel","love",
+    "hate","make","made","take","took","come","came",
+  ]);
+  if (words[0] === "i" && !words.some((w) => verbs.has(w))) return true;
+  return false;
+}
+
+/** Risk flag only. Never used as a "how to grow" suggestion. */
+function hasHateRisk(t: string): boolean {
+  const n = ` ${t.toLowerCase().replace(/[^a-z0-9#\s]/g, " ")} `;
+  const tokens = [
+    " nigger ", " nigga ", " kike ", " chink ",
+    " faggot ", " tranny ", " retard ",
+  ];
+  return tokens.some((w) => n.includes(w));
+}
+
 export function extractFeatures(text: string): DraftFeatures {
   const t = text.trim();
   const hashtags = (t.match(/#\w+/g) ?? []).length;
@@ -153,7 +191,12 @@ export function extractFeatures(text: string): DraftFeatures {
     !operator &&
     (proper > 0 || chargedTopic || lowercaseVoice) &&
     (openLoop || hedged || firstPerson || sceneVoice);
-  const scene = !operator && (openLoop || deadpan || sceneVoice || (chargedTopic && (hedged || lowercaseVoice)));
+  const cursed = !operator && !isEmpty && looksBrokenSyntax(t);
+  const hateRisk = hasHateRisk(t);
+  const scene =
+    !operator &&
+    !cursed &&
+    (openLoop || deadpan || sceneVoice || (chargedTopic && (hedged || lowercaseVoice)));
 
   return {
     text: t,
@@ -190,6 +233,8 @@ export function extractFeatures(text: string): DraftFeatures {
     announce,
     listicle,
     lowercaseVoice,
+    cursed,
+    hateRisk,
   };
 }
 
@@ -202,6 +247,20 @@ export function classifyLane(f: DraftFeatures): Lane {
       id: "spam",
       label: "Spam-shaped",
       blurb: "Looks like a broadcast. Grox and humans both bounce.",
+    };
+  }
+  if (f.hateRisk) {
+    return {
+      id: "volatile",
+      label: "Volatile",
+      blurb: "Can print replies. One report is −234. We do not coach this.",
+    };
+  }
+  if (f.cursed) {
+    return {
+      id: "cursed",
+      label: "Cursed",
+      blurb: "Broken on purpose. People quote the wreck. Don't fix the grammar.",
     };
   }
   if (f.operator) {
@@ -304,8 +363,29 @@ export function estimateProbabilities(
     p.click += 0.03;
   }
 
+  // Cursed = "I all of my bit coins". Quote-the-wreck + reply pile.
+  if (f.cursed && !f.hateRisk) {
+    p.reply += 0.08;
+    p.quote += 0.06;
+    p.shareViaCopyLink += 0.02;
+    p.favorite += 0.02;
+    p.notDwelled -= 0.07;
+    p.click += 0.02;
+  }
+
+  // Hate tokens: pile-on replies are real. So is ReportWeight −234.
+  // Expected value is usually bad. The ones that "fly" didn't get reported.
+  if (f.hateRisk) {
+    p.reply += 0.08;
+    p.quote += 0.04;
+    p.report += 0.012;
+    p.muteAuthor += 0.012;
+    p.notInterested += 0.02;
+    p.blockAuthor += 0.006;
+  }
+
   // Scene = weird Twitter. Reply and quote, not LinkedIn screenshots.
-  if (f.scene || f.openLoop || f.deadpan) {
+  if ((f.scene || f.openLoop || f.deadpan) && !f.cursed && !f.hateRisk) {
     p.reply += 0.09;
     p.quote += 0.055;
     p.click += 0.025;
@@ -359,7 +439,9 @@ export function estimateProbabilities(
     !f.deadpan &&
     !f.opinionated &&
     !f.operator &&
-    !f.scene
+    !f.scene &&
+    !f.cursed &&
+    !f.hateRisk
   ) {
     p.notDwelled += 0.08;
     p.dwell -= 0.04;
@@ -462,18 +544,17 @@ export function scoreDraft(text: string): ScoreResult {
   const headBit = top
     ? `${top.label.toLowerCase()} (${top.weight} × p≈${(top.probability * 100).toFixed(1)}%)`
     : "nothing";
-  const headline =
-    lane.id === "empty"
-      ? "Write something. Phoenix cannot rank a blank post."
-      : lane.id === "scene"
-        ? `Scene post. ${lane.blurb} Scoring on ${headBit}.`
-        : lane.id === "operator"
-          ? `Operator post. ${lane.blurb} Scoring on ${headBit}.`
-          : lane.id === "spam"
-            ? `Spam-shaped. ${lane.blurb}`
-            : lane.id === "thin"
-              ? `Thin. ${lane.blurb}`
-              : `Portable. ${lane.blurb} Scoring on ${headBit}.`;
+  const headlines: Record<LaneId, string> = {
+    empty: "Write something. Phoenix cannot rank a blank post.",
+    scene: `Scene post. ${lane.blurb} Scoring on ${headBit}.`,
+    operator: `Operator post. ${lane.blurb} Scoring on ${headBit}.`,
+    cursed: `Cursed. ${lane.blurb} Scoring on ${headBit}.`,
+    volatile: `Volatile. ${lane.blurb} Top head ${headBit}.`,
+    spam: `Spam-shaped. ${lane.blurb}`,
+    thin: `Thin. ${lane.blurb}`,
+    portable: `Portable. ${lane.blurb} Scoring on ${headBit}.`,
+  };
+  const headline = headlines[lane.id];
 
   return {
     features,
