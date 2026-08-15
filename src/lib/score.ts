@@ -23,6 +23,12 @@ export type DraftFeatures = {
   isShort: boolean;
   isLong: boolean;
   isEmpty: boolean;
+  /** Unfinished claim that begs "wait, what?" — the NK tweet shape. */
+  openLoop: boolean;
+  hedged: boolean;
+  firstPerson: boolean;
+  chargedTopic: boolean;
+  deadpan: boolean;
 };
 
 export type ActionEstimate = {
@@ -76,23 +82,53 @@ const ACTION_META: {
   { id: "report", label: "Report" },
 ];
 
+const OPEN_LOOP =
+  /(lied to|they told us|we were told|nobody (talks|says)|the thing about|pretty sure|beginning to think|starting to think|i was wrong about|don't buy|i don't buy|not buying|big time|about to say|wait until|the quiet part|what they|what nobody)/i;
+
+const HEDGED =
+  /(pretty sure|i think|i don't think|i dont think|maybe|low-key|ngl|i guess|starting to|beginning to|i'm not sure|im not sure|could be wrong)/i;
+
+const CHARGED =
+  /(north korea|n korea|\bnk\b|dprk|cia|fbi|nsa|mossad|epstein|covid|vaccine|\bufo\b|uap\b|ukraine|gaza|israel|taiwan|ccp|wuhan|lab leak|deep state|mainstream)/i;
+
+const FIRST_PERSON = /\b(i|i'm|im|i've|ive|me|my)\b/i;
+
 export function extractFeatures(text: string): DraftFeatures {
   const t = text.trim();
   const hashtags = (t.match(/#\w+/g) ?? []).length;
   const mentions = (t.match(/@\w+/g) ?? []).length;
   const numbers = (t.match(/\b\d+(\.\d+)?x?\b/g) ?? []).length;
+  const emoji = (t.match(/\p{Extended_Pictographic}/gu) ?? []).length;
+  const proper = (t.match(/\b[A-Z][a-zA-Z]{2,}\b/g) ?? []).length;
+  const hasQuestion = /\?/.test(t);
+  const isShort = t.length > 0 && t.length < 90;
+  const isEmpty = t.length < 8;
+  const hasUrl = /https?:\/\/|www\./i.test(t);
+  const openLoop = OPEN_LOOP.test(t);
+  const hedged = HEDGED.test(t);
+  const firstPerson = FIRST_PERSON.test(t);
+  const chargedTopic = CHARGED.test(t);
+  const deadpan =
+    !isEmpty &&
+    isShort &&
+    !hasUrl &&
+    hashtags === 0 &&
+    emoji <= 1 &&
+    (proper > 0 || chargedTopic) &&
+    (openLoop || hedged || firstPerson);
+
   return {
     text: t,
     chars: t.length,
-    hasUrl: /https?:\/\/|www\./i.test(t),
-    hasQuestion: /\?/.test(t),
+    hasUrl,
+    hasQuestion,
     hashtags,
     mentions,
     numbers,
     opinionated:
       /(unpopular|hot take|i think|actually|wrong|the reason|nobody|everyone|stop |most .+ is|here's what|here is what)/i.test(
         t,
-      ),
+      ) || openLoop,
     shareable:
       /(send this|screenshot|cheat sheet|framework|playbook|weights?|copy this|pass this|group chat|here is|here's)/i.test(
         t,
@@ -102,9 +138,14 @@ export function extractFeatures(text: string): DraftFeatures {
     threadCue: /(^\s*1\/|\bthread\b|a few thoughts|let me explain)/i.test(t),
     mediaCue: /\[(image|video|photo|gif)\]|\.(png|jpg|gif|mp4)\b/i.test(t),
     allCapsTokens: (t.match(/\b[A-Z]{4,}\b/g) ?? []).length,
-    isShort: t.length > 0 && t.length < 80,
+    isShort,
     isLong: t.length > 220,
-    isEmpty: t.length < 8,
+    isEmpty,
+    openLoop,
+    hedged,
+    firstPerson,
+    chargedTopic,
+    deadpan,
   };
 }
 
@@ -163,6 +204,28 @@ export function estimateProbabilities(
     p.click += 0.02;
     p.notDwelled -= 0.05;
   }
+  // Unfinished / hedged claims get replies and quotes, not copy-links.
+  // "I'm pretty sure I was lied to big time about N Korea"
+  if (f.openLoop || f.deadpan) {
+    p.reply += 0.09;
+    p.quote += 0.05;
+    p.click += 0.025;
+    p.followAuthor += 0.012;
+    p.notDwelled -= 0.08;
+    p.dwell += 0.06;
+    p.contDwellTime += 3;
+  }
+  if (f.hedged && f.firstPerson) {
+    p.reply += 0.025;
+    p.quote += 0.015;
+  }
+  if (f.chargedTopic) {
+    p.reply += 0.03;
+    p.quote += 0.02;
+    // Tiny negative prior — the topic is spicy, not a report farm.
+    p.notInterested += 0.002;
+    p.muteAuthor += 0.001;
+  }
   if (f.opinionated) {
     p.reply += 0.035;
     p.quote += 0.028;
@@ -187,7 +250,8 @@ export function estimateProbabilities(
     p.notDwelled -= 0.07;
     p.click += 0.02;
   }
-  if (f.isShort && !f.hasQuestion) {
+  // Short is only thin when it has nothing to stop on.
+  if (f.isShort && !f.hasQuestion && !f.openLoop && !f.deadpan && !f.opinionated) {
     p.notDwelled += 0.08;
     p.dwell -= 0.04;
     p.contDwellTime -= 2;
@@ -287,9 +351,11 @@ export function scoreDraft(text: string): ScoreResult {
   const top = actions.find((a) => a.kind === "positive" && a.contribution > 0);
   const headline = features.isEmpty
     ? "Write something. Phoenix cannot rank a blank post."
-    : top
-      ? `This draft is mostly scoring on ${top.label.toLowerCase()} (${top.weight} × p≈${(top.probability * 100).toFixed(1)}%).`
-      : "This draft is not exciting any positive head.";
+    : features.openLoop || features.deadpan
+      ? `Open loop — people reply to finish the thought. Scoring on ${(top?.label ?? "reply").toLowerCase()} (${top ? `${top.weight} × p≈${(top.probability * 100).toFixed(1)}%` : "replies"}).`
+      : top
+        ? `This draft is mostly scoring on ${top.label.toLowerCase()} (${top.weight} × p≈${(top.probability * 100).toFixed(1)}%).`
+        : "This draft is not exciting any positive head.";
 
   return {
     features,

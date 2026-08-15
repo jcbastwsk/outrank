@@ -83,7 +83,17 @@ export function coachDraft(score: ScoreResult): CoachResult {
     });
   }
 
-  if (!f.hasQuestion && !f.opinionated && !f.isEmpty) {
+  if (f.openLoop || f.deadpan) {
+    plays.push({
+      id: "keep-loop",
+      urgency: "now",
+      title: "Do not explain it in the same post",
+      why: "The replies exist because the thought is unfinished. Spell it out and you convert a reply/quote magnet into a blog sentence. Stay in the replies and answer there — each reply is weight 5.",
+      source: "ReplyWeight / QuoteWeight — open-loop prior",
+    });
+  }
+
+  if (!f.hasQuestion && !f.opinionated && !f.openLoop && !f.deadpan && !f.isEmpty) {
     plays.push({
       id: "invite-reply",
       urgency: "now",
@@ -93,7 +103,7 @@ export function coachDraft(score: ScoreResult): CoachResult {
     });
   }
 
-  if (!f.shareable && !f.isEmpty) {
+  if (!f.shareable && !f.openLoop && !f.deadpan && !f.isEmpty) {
     plays.push({
       id: "make-portable",
       urgency: "now",
@@ -123,7 +133,17 @@ export function coachDraft(score: ScoreResult): CoachResult {
     });
   }
 
-  if (f.isShort && !f.hasQuestion && !f.opinionated && !f.isEmpty) {
+  if (f.chargedTopic && !f.rageBait) {
+    plays.push({
+      id: "charged",
+      urgency: "next",
+      title: "Stay for the conversation, don't escalate",
+      why: "Loaded topics lift reply and quote priors. They also lift NotInterested and Mute a little. The published report head is −234 — do not turn this into an insult thread.",
+      source: "ReplyWeight vs NotInterested / Mute / Report",
+    });
+  }
+
+  if (f.isShort && !f.hasQuestion && !f.opinionated && !f.openLoop && !f.deadpan && !f.isEmpty) {
     plays.push({
       id: "thin",
       urgency: "next",
@@ -206,6 +226,10 @@ export const SAMPLE_DRAFTS = [
   {
     label: "Link dump",
     text: "New blog post is up!! Check it out 🔥 https://example.com/my-startup-essay #startup #buildinpublic #ai #growth",
+  },
+  {
+    label: "Open loop",
+    text: "I'm pretty sure I was lied to big time about N Korea",
   },
   {
     label: "Soft take",
