@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getEntitlement, getUsage } from "../../../../lib/billing";
 import { SCOUT_DAILY_CAP, unlimitedScores } from "../../../../lib/plans";
-import { stripeConfigured } from "../../../../lib/stripe";
+import { stripeConfigured, stripeMode } from "../../../../lib/stripe";
 
 export async function GET() {
   const ent = await getEntitlement();
@@ -11,6 +11,7 @@ export async function GET() {
     email: ent.email ?? null,
     customerId: ent.customerId ?? null,
     stripe: stripeConfigured(),
+    stripeMode: stripeMode(),
     usage: {
       used: unlimitedScores(ent.plan) ? 0 : usage.n,
       cap: unlimitedScores(ent.plan) ? null : SCOUT_DAILY_CAP,

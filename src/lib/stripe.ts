@@ -6,6 +6,13 @@ export function stripeConfigured() {
   return Boolean(process.env.STRIPE_SECRET_KEY);
 }
 
+export function stripeMode(): "off" | "test" | "live" {
+  const key = process.env.STRIPE_SECRET_KEY ?? "";
+  if (key.startsWith("sk_test_")) return "test";
+  if (key.startsWith("sk_live_")) return "live";
+  return key ? "live" : "off";
+}
+
 export function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) {

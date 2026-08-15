@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CheckoutButton } from "../../components/CheckoutButton";
 import { SiteFooter, SiteHeader } from "../../components/SiteHeader";
 import { PLANS } from "../../lib/plans";
+import { stripeMode } from "../../lib/stripe";
 
 export default async function PricingPage({
   searchParams,
@@ -9,6 +10,7 @@ export default async function PricingPage({
   searchParams: Promise<{ canceled?: string }>;
 }) {
   const { canceled } = await searchParams;
+  const mode = stripeMode();
 
   return (
     <div className="flex min-h-full flex-col">
@@ -23,6 +25,17 @@ export default async function PricingPage({
         {canceled && (
           <p className="panel mt-6 px-4 py-3 text-sm text-[var(--muted)]">
             Checkout canceled. Nothing was charged.
+          </p>
+        )}
+        {mode === "test" && (
+          <p className="panel mt-6 px-4 py-3 text-sm leading-6">
+            <span className="mono text-[var(--gold)]">Stripe test mode.</span>{" "}
+            Card{" "}
+            <span className="mono">4242 4242 4242 4242</span> — sixteen digits,
+            spaces optional. Expiry any future month. CVC any 3 digits. ZIP
+            any. The page must say TEST MODE.{" "}
+            <span className="mono">42424242</span> alone is 8 digits and
+            Safari rejects it as a pattern mismatch.
           </p>
         )}
         <div className="mt-12 grid gap-5 md:grid-cols-3">
