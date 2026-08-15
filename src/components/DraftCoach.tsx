@@ -82,6 +82,9 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
             </p>
             <p className="mt-2 text-[11px] uppercase tracking-[0.14em] text-[var(--gold)]">
               {result.lane.label}
+              {result.tribe !== "none" && result.lane.label.toLowerCase() !== "milady"
+                ? ` · ${result.tribe}`
+                : ""}
             </p>
           </div>
           <div className="text-right text-xs text-[var(--muted)]">

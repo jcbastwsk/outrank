@@ -38,6 +38,21 @@ export type DraftFeatures = {
   cursed: boolean;
   hateRisk: boolean;
   aiReel: boolean;
+  tribe: TribeId;
+  costume: boolean;
+};
+
+export type TribeId = "none" | "milady";
+
+export const TRIBE_META: Record<
+  TribeId,
+  { label: string; blurb: string }
+> = {
+  none: { label: "", blurb: "" },
+  milady: {
+    label: "Milady",
+    blurb: "Remilia room. Reads as nothing unless the viewer already lives there.",
+  },
 };
 
 export type LaneId =
@@ -74,6 +89,7 @@ export type ScoreResult = {
   reach: number;
   grade: "F" | "D" | "C" | "B" | "A" | "S";
   lane: Lane;
+  tribe: TribeId;
   headline: string;
   disclaimer: string;
 };
@@ -135,6 +151,9 @@ const AI_TOOL =
 
 const CINEMA_LEX =
   /(cinematic|short film|ai film|ai cinema|ai art|teaser|trailer|\bstill\b|keyframe|color grade|anamorphic|no crew|no camera|generations?|the prompt|ai slop|this is ai|made with ai)/i;
+
+const MILADY =
+  /\b(milady|miladies|remilia|radbro|radbros|very milady|gm milady|gn milady)\b/i;
 
 const WORKFLOW_BAIT =
   /(comment \w+|workflow in (the )?thread|prompt in (the )?thread|save this|which (one|frame|still)|drop a 🔥)/i;
@@ -206,14 +225,23 @@ export function extractFeatures(text: string): DraftFeatures {
   const workflowBait = WORKFLOW_BAIT.test(t);
   const aiReel =
     !isEmpty &&
+    !MILADY.test(t) &&
     (aiCraft || workflowBait) &&
     (aiCraft || operator || announce || agreeBait || listicle || workflowBait);
-  const cursed = !operator && !aiReel && !isEmpty && looksBrokenSyntax(t);
+  const tribe: TribeId = MILADY.test(t) ? "milady" : "none";
+  const costume = tribe !== "none" && (operator || announce || listicle);
+  const cursed = !operator && !aiReel && tribe === "none" && !isEmpty && looksBrokenSyntax(t);
   const hateRisk = hasHateRisk(t);
   const scene =
-    !operator &&
-    !cursed &&
-    (openLoop || deadpan || sceneVoice || (chargedTopic && (hedged || lowercaseVoice)));
+    (!operator &&
+      !cursed &&
+      !aiReel &&
+      (openLoop ||
+        deadpan ||
+        sceneVoice ||
+        tribe !== "none" ||
+        (chargedTopic && (hedged || lowercaseVoice)))) ||
+    (tribe !== "none" && !aiReel);
 
   return {
     text: t,
@@ -255,6 +283,8 @@ export function extractFeatures(text: string): DraftFeatures {
     cursed,
     hateRisk,
     aiReel,
+    tribe,
+    costume,
   };
 }
 
@@ -288,6 +318,14 @@ export function classifyLane(f: DraftFeatures): Lane {
       id: "reel",
       label: "Reel",
       blurb: "AI art/cinema. The LinkedIn skeleton is native here. Still + number + thread.",
+    };
+  }
+  if (f.tribe !== "none") {
+    const meta = TRIBE_META[f.tribe];
+    return {
+      id: "scene",
+      label: meta.label,
+      blurb: meta.blurb,
     };
   }
   if (f.operator) {
@@ -426,7 +464,15 @@ export function estimateProbabilities(
   }
 
   // Scene = weird Twitter. Reply and quote, not LinkedIn screenshots.
-  if ((f.scene || f.openLoop || f.deadpan) && !f.cursed && !f.hateRisk) {
+  if (f.tribe === "milady" && !f.hateRisk) {
+    p.reply += 0.07;
+    p.quote += 0.05;
+    p.favorite += 0.02;
+    p.notDwelled -= 0.06;
+    // Cold OON viewers bounce. Mutuals in the room do not.
+  }
+
+  if ((f.scene || f.openLoop || f.deadpan) && !f.cursed && !f.hateRisk && f.tribe === "none") {
     p.reply += 0.09;
     p.quote += 0.055;
     p.click += 0.025;
@@ -557,6 +603,7 @@ export function estimateProbabilities(
 export function scoreDraft(text: string): ScoreResult {
   const features = extractFeatures(text);
   const lane = classifyLane(features);
+  const tribe = features.tribe;
   const probs = estimateProbabilities(features);
 
   const actions: ActionEstimate[] = ACTION_META.map(({ id, label }) => {
@@ -588,7 +635,10 @@ export function scoreDraft(text: string): ScoreResult {
     : "nothing";
   const headlines: Record<LaneId, string> = {
     empty: "Write something. Phoenix cannot rank a blank post.",
-    scene: `Scene post. ${lane.blurb} Scoring on ${headBit}.`,
+    scene:
+      tribe !== "none"
+        ? `${TRIBE_META[tribe].label} room. ${lane.blurb} Scoring on ${headBit}.`
+        : `Scene post. ${lane.blurb} Scoring on ${headBit}.`,
     operator: `Operator post. ${lane.blurb} Scoring on ${headBit}.`,
     reel: `Reel. ${lane.blurb} Scoring on ${headBit}.`,
     cursed: `Cursed. ${lane.blurb} Scoring on ${headBit}.`,
@@ -602,6 +652,7 @@ export function scoreDraft(text: string): ScoreResult {
   return {
     features,
     lane,
+    tribe,
     actions,
     rawScore,
     reach,

@@ -168,7 +168,26 @@ export function coachDraft(score: ScoreResult): CoachResult {
     });
   }
 
-  if ((score.lane.id === "scene" || f.openLoop || f.deadpan) && !f.cursed && !f.hateRisk) {
+  if (f.tribe === "milady") {
+    plays.push({
+      id: "milady-room",
+      urgency: "now",
+      title: "This only lands in the Remilia graph",
+      why: "Milady is a room, not a growth tactic. Mutuals who already live there will reply. A cold For You viewer sees a private joke (OON ×0.75). Don't explain Remilia. Don't append gm milady to a fundraise.",
+      source: "Per-viewer Phoenix + OonWeightFactor",
+    });
+    if (f.costume) {
+      plays.push({
+        id: "milady-costume",
+        urgency: "never",
+        title: "That's a costume, not a vibe",
+        why: "Operator skeleton plus a milady sticker reads as extraction. The room will mute it. The paying buyer should steal unfinished one-breath craft from this scene — not the skin.",
+        source: "MuteAuthorWeight + scene graph",
+      });
+    }
+  }
+
+  if ((score.lane.id === "scene" || f.openLoop || f.deadpan) && !f.cursed && !f.hateRisk && f.tribe === "none") {
     plays.push({
       id: "keep-loop",
       urgency: "now",
@@ -367,6 +386,10 @@ export const SAMPLE_DRAFTS = [
   {
     label: "Open loop",
     text: "I'm pretty sure I was lied to big time about N Korea",
+  },
+  {
+    label: "Milady",
+    text: "very milady of the timeline today. remilia forever",
   },
   {
     label: "Cursed",
