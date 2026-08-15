@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BillingBar } from "./BillingBar";
 import { Wordmark } from "./Brand";
+import { HandleChip } from "./HandleChip";
 
 const NAV = [
   { href: "/app", label: "Command" },
@@ -23,7 +24,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-2 sm:px-5 md:h-16 md:flex-row md:items-center md:justify-between md:gap-3 md:py-0">
             <div className="flex items-center justify-between gap-3">
               <Wordmark href="/app" />
-              <div className="md:hidden">
+              <div className="flex items-center gap-2 md:hidden">
+                <HandleChip compact />
                 <BillingBar />
               </div>
             </div>
@@ -42,7 +44,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 );
               })}
             </nav>
-            <div className="hidden md:block">
+            <div className="hidden items-center gap-3 md:flex">
+              <HandleChip compact />
               <BillingBar />
             </div>
           </div>

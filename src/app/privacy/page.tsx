@@ -57,10 +57,11 @@ export default function PrivacyPage() {
         works. They are not an ad network.
       </p>
       <p>
-        <strong>On your machine only.</strong> Vibe profile, curator copies,
-        and a joke hit counter live in <span className="mono">localStorage</span>.
-        Clear site data and they are gone. We cannot read your localStorage
-        from another computer.
+        <strong>On your machine only.</strong> Vibe profile, the @ you typed,
+        curator copies, and a joke hit counter live in{" "}
+        <span className="mono">localStorage</span>. We do not fetch your X
+        profile. Clear site data and they are gone. We cannot read your
+        localStorage from another computer.
       </p>
       <p>
         <strong>We do not take.</strong> Your X password. Your DMs. Your

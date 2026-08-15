@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { coachDraft, SAMPLE_DRAFTS, type CoachResult } from "../lib/coach";
 import { FORMAT_META, scoreDraft } from "../lib/score";
+import { classifyHandle, HANDLE_KEY } from "../lib/handle";
 import { VIBE_KEY, type VibeProfile } from "../lib/vibe";
 
 function gradeColor(g: string) {
@@ -20,12 +21,35 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
   const [vibe, setVibe] = useState<VibeProfile | null>(null);
   useEffect(() => {
     const raw = localStorage.getItem(VIBE_KEY);
-    if (!raw) return;
-    try {
-      setVibe(JSON.parse(raw) as VibeProfile);
-    } catch {
-      /* ignore */
+    const handleRaw = localStorage.getItem(HANDLE_KEY);
+    const handle = handleRaw ? classifyHandle(handleRaw) : null;
+    let next: VibeProfile | null = null;
+    if (raw) {
+      try {
+        next = JSON.parse(raw) as VibeProfile;
+      } catch {
+        next = null;
+      }
     }
+    if (handle?.handle) {
+      next = {
+        ...(next ?? {
+          updatedAt: new Date().toISOString(),
+          samples: 0,
+          posture: "thin",
+          tribe: "none",
+          aesthetic: handle.label,
+          confidence: 0.4,
+          mix: [],
+          formatMix: [],
+          cadence: "mixed",
+          note: handle.blurb,
+        }),
+        handle: handle.handle,
+        handleKind: handle.kind,
+      };
+    }
+    if (next) setVibe(next);
   }, []);
   const result: CoachResult = useMemo(
     () => coachDraft(scoreDraft(text), vibe),

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { HandleChip } from "./HandleChip";
+import { HANDLE_KEY } from "../lib/handle";
 import {
   VIBE_KEY,
   inferVibe,
@@ -23,7 +25,8 @@ export function VibeDesk({ compact = false }: { compact?: boolean }) {
   }, []);
 
   function save() {
-    const next = inferVibe(splitPosts(blob));
+    const handle = localStorage.getItem(HANDLE_KEY) ?? undefined;
+    const next = inferVibe(splitPosts(blob), handle);
     setProfile(next);
     localStorage.setItem(VIBE_KEY, JSON.stringify(next));
   }
@@ -37,7 +40,8 @@ export function VibeDesk({ compact = false }: { compact?: boolean }) {
   return (
     <div className={compact ? "card p-5" : "grid gap-5 lg:grid-cols-2"}>
       <div className={compact ? "" : "card p-5"}>
-        <p className="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+        <HandleChip />
+        <p className="mt-4 text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
           Your last posts
         </p>
         <textarea
@@ -65,6 +69,12 @@ export function VibeDesk({ compact = false }: { compact?: boolean }) {
               {Math.round(profile.confidence * 100)}% · {profile.samples} posts
             </p>
             <p className="serif mt-2 text-3xl">{profile.aesthetic.split(" — ")[0]}</p>
+            {profile.handle && (
+              <p className="mono mt-1 text-sm text-[var(--cyan)]">
+                @{profile.handle}
+                {profile.handleKind ? ` · ${profile.handleKind}` : ""}
+              </p>
+            )}
             <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-[var(--gold)]">
               {profile.cadence === "essayist"
                 ? "Essay cadence"

@@ -6,6 +6,7 @@ import {
   type TribeId,
   classifyLane,
 } from "./score";
+import { classifyHandle, type HandleKind } from "./handle";
 
 export type FormatCadence = "sprinter" | "mixed" | "essayist";
 
@@ -26,6 +27,8 @@ export type VibeProfile = {
   formatMix: VibeMix[];
   cadence: FormatCadence;
   note: string;
+  handle?: string;
+  handleKind?: HandleKind;
 };
 
 const AESTHETIC: Record<string, string> = {
@@ -50,7 +53,7 @@ export function splitPosts(blob: string): string[] {
     .slice(0, 20);
 }
 
-export function inferVibe(texts: string[]): VibeProfile {
+export function inferVibe(texts: string[], handleRaw?: string): VibeProfile {
   const posts = texts.map((t) => t.trim()).filter((t) => t.length > 2);
   const counts = new Map<string, number>();
   const formatCounts = new Map<FormatId, number>();
@@ -126,6 +129,11 @@ export function inferVibe(texts: string[]): VibeProfile {
         ? AESTHETIC[top.id] ?? top.label
         : AESTHETIC.empty;
 
+  const handleRead = handleRaw ? classifyHandle(handleRaw) : null;
+  const handleNote = handleRead?.handle
+    ? ` ${handleRead.display} reads ${handleRead.label.toLowerCase()}. ${handleRead.blurb}`
+    : "";
+
   const cadenceNote =
     cadence === "essayist"
       ? " You write long — click, dwell, copy-link. A thin short from you is a status update."
@@ -133,28 +141,22 @@ export function inferVibe(texts: string[]): VibeProfile {
         ? " You write shorts — one breath or it dies. An essay has to open like one of your tweets."
         : "";
 
-  const note =
+  const body =
     samples === 0
       ? "Paste a few recent posts. One tweet is a mood, not a room."
       : tribe === "milady"
-        ? "You post from inside a room. Cold For You will bounce. Don't explain Remilia. Don't costume a fundraise." +
-          cadenceNote
+        ? "You post from inside a room. Cold For You will bounce. Don't explain Remilia. Don't costume a fundraise."
         : tribe === "queer"
-          ? "In-group gay voice. A modifier in the room is a report on a cold For You. Don't industrialize it. Don't costume a fundraise with it." +
-            cadenceNote
-        : posture === "operator"
-          ? "You write like someone who posts on purpose. Screenshot + a real ask. Steal scene craft, not scene skin." +
-            cadenceNote
-          : posture === "reel"
-            ? "AI art/cinema room. The LinkedIn skeleton is allowed. Still + number + thread." +
-              cadenceNote
-            : posture === "scene"
-              ? "Fat-tail OC. Unfinished thoughts. The last 20 posts are the context window." +
-                cadenceNote
-              : posture === "cursed"
-                ? "The wreck is the bit. Don't suddenly become articulate." + cadenceNote
-                : "No stable room yet. More samples, or you're switching costumes." +
-                  cadenceNote;
+          ? "In-group gay voice. A modifier in the room is a report on a cold For You. Don't industrialize it. Don't costume a fundraise with it."
+          : posture === "operator"
+            ? "You write like someone who posts on purpose. Screenshot + a real ask. Steal scene craft, not scene skin."
+            : posture === "reel"
+              ? "AI art/cinema room. The LinkedIn skeleton is allowed. Still + number + thread."
+              : posture === "scene"
+                ? "Fat-tail OC. Unfinished thoughts. The last 20 posts are the context window."
+                : posture === "cursed"
+                  ? "The wreck is the bit. Don't suddenly become articulate."
+                  : "No stable room yet. More samples, or you're switching costumes.";
 
   return {
     updatedAt: new Date().toISOString(),
@@ -166,7 +168,9 @@ export function inferVibe(texts: string[]): VibeProfile {
     mix,
     formatMix,
     cadence,
-    note,
+    note: body + cadenceNote + handleNote,
+    handle: handleRead?.handle || undefined,
+    handleKind: handleRead?.kind,
   };
 }
 

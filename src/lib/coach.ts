@@ -239,6 +239,50 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
         f.costume) ||
       (vibe?.posture === "reel" && score.lane.id === "operator" && !f.aiReel));
 
+  const handleKind = vibe?.handleKind;
+  if (handleKind === "named" && f.cursed && !f.hateRisk) {
+    plays.push({
+      id: "named-desk",
+      urgency: "next",
+      title: "This @ is a person. The wreck still works.",
+      why: `@${vibe?.handle} reads as a real name. Tech accounts almost never hide. A cursed line from a named desk is a bit they chose. Don't "fix" it into a lesson.`,
+      source: "Handle prior + cursed prior",
+    });
+  }
+  if (handleKind === "anon" && score.lane.id === "operator") {
+    plays.push({
+      id: "anon-operator",
+      urgency: "now",
+      title: "A throwaway @ giving lessons is a bit",
+      why: `@${vibe?.handle} is anon-shaped (digits, alt, anime-serial). “10 things I learned” from that desk reads as a dropshipper. Stay in the wreck or get a name.`,
+      source: "Handle prior vs operator lane",
+    });
+  }
+  if (handleKind === "fan" && (score.lane.id === "operator" || f.announce)) {
+    plays.push({
+      id: "fan-desk",
+      urgency: "now",
+      title: "Fan accounts don't ship announcements",
+      why: `@${vibe?.handle} looks like a stan/updates handle. The graph follows a subject, not a founder. A fundraise or “we just shipped” is a costume.`,
+      source: "Handle prior vs FollowAuthorWeight",
+    });
+  }
+  if (
+    handleKind === "corp" &&
+    (score.lane.id === "cursed" ||
+      score.lane.id === "scene" ||
+      f.tribe === "queer" ||
+      f.tribe === "milady")
+  ) {
+    plays.push({
+      id: "corp-desk",
+      urgency: "now",
+      title: "This is a brand handle",
+      why: `@${vibe?.handle} reads HQ / official / support. Scene wrecks and room slang from a corp @ look like a social intern. Brands score on copy-link and a real ask — not on bits.`,
+      source: "Handle prior vs mute / NotInterested",
+    });
+  }
+
   if (offVoice && vibe) {
     plays.push({
       id: "off-voice",
