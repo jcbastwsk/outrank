@@ -15,7 +15,7 @@ async function applyBase(base) {
 }
 
 async function refresh() {
-  const stored = await chrome.storage.sync.get({ apiBase: "http://localhost:3000" });
+  const stored = await chrome.storage.sync.get({ apiBase: "https://www.outrank.coach" });
   input.value = stored.apiBase;
   const hit = await window.OutrankConnect.findApi(stored.apiBase);
   if (!hit) {
@@ -28,7 +28,7 @@ async function refresh() {
 }
 
 save.addEventListener("click", async () => {
-  const base = input.value.trim().replace(/\/$/, "") || "http://localhost:3000";
+  const base = input.value.trim().replace(/\/$/, "") || "https://www.outrank.coach";
   await applyBase(base);
   const hit = await window.OutrankConnect.probeApi(base);
   if (hit) setStatus(true, `Connected · ${hit.data?.plan || "scout"}`);

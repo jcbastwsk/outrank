@@ -5,7 +5,7 @@
   z-index: 2147483646;
   width: 340px;
   font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-  color: #f4efe4;
+  color: #f8f1ff;
 }
 
 #outrank-root * {
@@ -13,11 +13,9 @@
 }
 
 .or-card {
-  background: rgba(12, 12, 14, 0.94);
-  border: 1px solid rgba(245, 185, 66, 0.28);
-  border-radius: 16px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(16px);
+  background: linear-gradient(180deg, #240844 0%, #14002c 100%);
+  border: 3px ridge #ff3dce;
+  box-shadow: 4px 4px 0 #3df0ff;
   overflow: hidden;
 }
 
@@ -26,11 +24,12 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  border-bottom: 1px solid rgba(245, 185, 66, 0.14);
-  font-size: 11px;
-  letter-spacing: 0.14em;
+  border-bottom: 2px ridge #3df0ff;
+  font-size: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #f5b942;
+  color: #ffe14a;
+  background: #0a001c;
 }
 
 .or-body {
@@ -47,11 +46,20 @@
   font-size: 36px;
   font-weight: 500;
   line-height: 1;
+  color: #b8ff3d;
 }
 
 .or-score span {
-  color: #9a958a;
+  color: #c4b3de;
   font-size: 12px;
+}
+
+.or-lane {
+  margin: 4px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffe14a;
 }
 
 .or-head-line {
@@ -61,30 +69,40 @@
 }
 
 .or-play {
-  border-top: 1px solid rgba(245, 185, 66, 0.12);
+  border-top: 2px inset #6a3a9a;
   padding: 8px 0 0;
   margin-top: 8px;
   font-size: 12px;
   line-height: 1.45;
-  color: #cfc8b8;
+  color: #c4b3de;
 }
 
 .or-play strong {
   display: block;
-  color: #f4efe4;
+  color: #f8f1ff;
   margin-bottom: 2px;
 }
 
+.or-risk {
+  margin: 0 0 8px;
+  padding: 8px;
+  border: 2px inset #ff4d6d;
+  color: #ff4d6d;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .or-muted {
-  color: #9a958a;
+  color: #c4b3de;
   font-size: 12px;
 }
 
 .or-btn {
   appearance: none;
-  border: 0;
-  background: transparent;
-  color: #f5b942;
+  border: 2px outset #7a4ab0;
+  background: #1a0838;
+  color: #3df0ff;
   cursor: pointer;
   font: inherit;
+  padding: 2px 8px;
 }

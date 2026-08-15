@@ -1,5 +1,6 @@
 (() => {
   const FALLBACKS = [
+    "https://www.outrank.coach",
     "https://outrank.coach",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -48,11 +49,19 @@
       return;
     }
     const play = (state.plays && state.plays[0]) || null;
+    const lane = state.lane?.label || "";
+    const fmt = state.format || "";
     body.innerHTML = `
+      ${
+        state.accountRisk
+          ? `<p class="or-risk"><strong>Do not nuke the account.</strong> We will not help you tune this.</p>`
+          : ""
+      }
       <div class="or-score">
         <b>${state.reach}</b>
-        <span>${state.grade}${state.format ? ` · ${escapeHtml(state.format)}` : ""} · raw ${Number(state.rawScore).toFixed(2)}</span>
+        <span>${escapeHtml(state.grade || "")}${fmt ? ` · ${escapeHtml(fmt)}` : ""} · raw ${Number(state.rawScore).toFixed(2)}</span>
       </div>
+      <p class="or-lane">${escapeHtml([lane, fmt].filter(Boolean).join(" · "))}</p>
       <p class="or-head-line">${escapeHtml(state.headline || "")}</p>
       ${
         play

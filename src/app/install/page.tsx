@@ -19,7 +19,7 @@ const STEPS = [
   {
     n: "04",
     t: "Pin it, then compose",
-    d: "Puzzle piece → pin Outrank. Click it. It should say Connected. Then open x.com and start a post — gold panel, bottom right.",
+    d: "Puzzle piece → pin Outrank. Click it. Set API to https://www.outrank.coach (or penguin.linux.test:3000 for local). Then open x.com — magenta panel, bottom right.",
   },
 ];
 

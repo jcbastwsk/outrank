@@ -6,8 +6,8 @@
       body {
         margin: 0;
         width: 300px;
-        background: #09090b;
-        color: #f4efe4;
+        background: #070016;
+        color: #f8f1ff;
         font: 13px/1.45 ui-sans-serif, system-ui, sans-serif;
         padding: 14px;
       }
@@ -15,24 +15,23 @@
         margin: 0 0 8px;
         font-size: 15px;
       }
-      .ok { color: #3dd68c; }
-      .bad { color: #ff5d5d; }
-      .muted { color: #9a958a; font-size: 12px; }
+      .ok { color: #b8ff3d; }
+      .bad { color: #ff4d6d; }
+      .muted { color: #c4b3de; font-size: 12px; }
       label {
         display: block;
         margin-top: 12px;
         font-size: 11px;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #9a958a;
+        color: #c4b3de;
       }
       input {
         width: 100%;
         margin-top: 6px;
         padding: 8px;
-        border-radius: 8px;
-        border: 1px solid rgba(245, 185, 66, 0.25);
-        background: #111;
+        border: 2px inset #6a3a9a;
+        background: #070016;
         color: inherit;
         box-sizing: border-box;
       }
@@ -40,11 +39,11 @@
         display: block;
         margin-top: 8px;
         width: 100%;
-        border: 0;
-        border-radius: 999px;
+        border: 3px outset #ffe14a;
+        border-radius: 0;
         padding: 8px;
-        background: linear-gradient(180deg, #f7c65a, #e0a21a);
-        color: #1a1304;
+        background: linear-gradient(180deg, #fff38a, #ffb000);
+        color: #2a1500;
         font-weight: 600;
         text-align: center;
         text-decoration: none;
@@ -52,9 +51,9 @@
         cursor: pointer;
       }
       a.ghost {
-        background: transparent;
-        border: 1px solid rgba(245, 185, 66, 0.3);
-        color: #f4efe4;
+        background: #120028;
+        border: 3px outset #3df0ff;
+        color: #3df0ff;
       }
       #status { margin-top: 8px; font-size: 12px; }
     </style>
@@ -63,13 +62,13 @@
     <h1>Outrank</h1>
     <div id="status" class="muted">Checking local app…</div>
     <label>API</label>
-    <input id="api" value="http://localhost:3000" />
+    <input id="api" value="https://www.outrank.coach" />
     <button id="save">Save & test</button>
     <a class="btn" id="compose" href="https://x.com/compose/post" target="_blank">Open X compose</a>
-    <a class="btn ghost" id="dash" href="http://localhost:3000/app" target="_blank">Open dashboard</a>
+    <a class="btn ghost" id="dash" href="https://www.outrank.coach/app" target="_blank">Open dashboard</a>
     <p class="muted">
-      On Chrome OS, if localhost fails, try
-      <span style="color:#f5b942">http://penguin.linux.test:3000</span>
+      Production is <span style="color:#3df0ff">https://www.outrank.coach</span>.
+      Local Linux: <span style="color:#ffe14a">http://penguin.linux.test:3000</span>
     </p>
     <script src="connect.js"></script>
     <script src="popup.js"></script>
