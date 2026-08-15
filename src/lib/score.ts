@@ -427,7 +427,7 @@ export function estimateProbabilities(
     p.contDwellTime += 6;
   }
 
-  if (f.operator && !f.aiReel) {
+  if (f.operator && !f.aiReel && f.tribe === "none") {
     p.shareViaCopyLink += 0.04;
     p.shareViaDm += 0.012;
     p.favorite += 0.04;
@@ -437,7 +437,7 @@ export function estimateProbabilities(
     p.contDwellTime += f.listicle || f.isLong ? 10 : 4;
     p.notDwelled -= 0.06;
   }
-  if (f.announce && f.operator && !f.aiReel) {
+  if (f.announce && f.operator && !f.aiReel && f.tribe === "none") {
     p.followAuthor += 0.02;
     p.click += 0.03;
   }

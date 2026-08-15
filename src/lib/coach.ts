@@ -222,6 +222,7 @@ export function coachDraft(score: ScoreResult): CoachResult {
     !f.aiReel &&
     !f.cursed &&
     !f.hateRisk &&
+    f.tribe === "none" &&
     !f.isEmpty
   ) {
     plays.push({
@@ -241,6 +242,7 @@ export function coachDraft(score: ScoreResult): CoachResult {
     !f.aiReel &&
     !f.cursed &&
     !f.hateRisk &&
+    f.tribe === "none" &&
     !f.isEmpty
   ) {
     plays.push({
