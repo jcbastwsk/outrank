@@ -232,7 +232,9 @@ export function extractFeatures(text: string): DraftFeatures {
         t,
       ),
     rageBait:
-      /(idiot|stupid|clown|destroyed|ratio|you won'?t believe|wake up)/i.test(t),
+      /\b(idiot|stupid|clown|destroyed|ratio)\b|you won'?t believe|\bwake up\b/i.test(
+        t,
+      ),
     threadCue: /(^\s*1\/|\bthread\b|a few thoughts|let me explain)/i.test(t),
     mediaCue: /\[(image|video|photo|gif)\]|\.(png|jpg|gif|mp4)\b/i.test(t),
     allCapsTokens: (t.match(/\b[A-Z]{4,}\b/g) ?? []).length,
