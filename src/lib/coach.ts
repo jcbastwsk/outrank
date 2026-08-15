@@ -25,7 +25,6 @@ export function isAccountRisk(score: ScoreResult): boolean {
   const report = score.actions.find((a) => a.id === "report")?.contribution ?? 0;
   return (
     score.features.hateRisk ||
-    score.features.rageBait ||
     score.lane.id === "volatile" ||
     report < -0.4
   );
@@ -218,7 +217,7 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
     });
   }
 
-  if (score.lane.id === "volatile" || f.hateRisk || f.rageBait) {
+  if (score.lane.id === "volatile" || f.hateRisk) {
     plays.push({
       id: "dont-nuke",
       urgency: "never",
@@ -229,11 +228,15 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
   }
 
   const inMiladyRoom = vibe?.tribe === "milady";
+  const inQueerRoom = vibe?.tribe === "queer";
   const inOperatorRoom = vibe?.posture === "operator" && (vibe.confidence ?? 0) >= 0.5;
   const offVoice =
     Boolean(vibe && vibe.samples >= 3 && vibe.confidence >= 0.5) &&
     ((inMiladyRoom && score.lane.id === "operator") ||
-      (inOperatorRoom && (score.lane.id === "scene" || f.tribe === "milady") && f.costume) ||
+      (inQueerRoom && score.lane.id === "operator") ||
+      (inOperatorRoom &&
+        (score.lane.id === "scene" || f.tribe === "milady" || f.tribe === "queer") &&
+        f.costume) ||
       (vibe?.posture === "reel" && score.lane.id === "operator" && !f.aiReel));
 
   if (offVoice && vibe) {
@@ -274,6 +277,27 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
       why: "You usually ship long/article. A thin short from an essay account doesn't generate the click + dwell your graph is trained on. Either write the piece or cut to a claim.",
       source: "Per-viewer Phoenix + format cadence",
     });
+  }
+
+  if (f.tribe === "queer" || f.reclaimed) {
+    plays.push({
+      id: "queer-room",
+      urgency: "now",
+      title: "The room hears a modifier. For You hears a slur.",
+      why: inQueerRoom
+        ? "You're already in that graph. Don't explain the joke. Don't turn a room word into a growth template. Cold viewers still generate Report (−234) and Mute (−58.8)."
+        : "In-group gay voice can use a word as endearment that a cold OON viewer reports. Phoenix is per-viewer (OON ×0.75). We will not coach you to use it. If you are not in this room, that is a costume.",
+      source: "Per-viewer Phoenix + ReportWeight + OonWeightFactor",
+    });
+    if (f.costume) {
+      plays.push({
+        id: "queer-costume",
+        urgency: "never",
+        title: "That's a costume, not a vibe",
+        why: "Operator skeleton plus a room slur reads as extraction. The room will mute it. The paying buyer steals unfinished one-breath craft — not the in-joke.",
+        source: "MuteAuthorWeight + scene graph",
+      });
+    }
   }
 
   if (f.tribe === "milady") {
@@ -391,9 +415,9 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
   if (f.rageBait) {
     plays.push({
       id: "rage",
-      urgency: "never",
-      title: "Rewrite without the insult",
-      why: `You may pick up replies and also ReportWeight ${ACTION_WEIGHTS.report} and MuteAuthorWeight ${ACTION_WEIGHTS.muteAuthor}. The negative heads dominate.`,
+      urgency: "next",
+      title: "Ratio-farming lifts reports too",
+      why: `"Idiot" is just speech. "Ratio him" is a pile-on. The pile-on is what lifts Report (${ACTION_WEIGHTS.report}) and Mute (${ACTION_WEIGHTS.muteAuthor}).`,
       source: "ReportWeight / MuteAuthorWeight",
     });
   }

@@ -3,6 +3,7 @@ import {
   BOOSTS,
   likeEquivalent,
 } from "./weights";
+import { isRageBait, readSlurs } from "./language";
 
 export type ActionId = keyof typeof ACTION_WEIGHTS;
 
@@ -45,6 +46,8 @@ export type DraftFeatures = {
   lowercaseVoice: boolean;
   cursed: boolean;
   hateRisk: boolean;
+  /** In-group reclaimed slur. Room voice, not a growth play. */
+  reclaimed: boolean;
   aiReel: boolean;
   tribe: TribeId;
   costume: boolean;
@@ -63,7 +66,7 @@ export const FORMAT_META: Record<FormatId, { label: string; blurb: string }> = {
 const WEAK_LEDE =
   /^(i (just )?(wrote|published|dropped|posted)( an?)?( article| essay| piece| thread| blog)?|new (article|essay|blog|post|thread)\b|a few thoughts\b|thread:|👇|read (the )?(rest|more|below|full))/i;
 
-export type TribeId = "none" | "milady";
+export type TribeId = "none" | "milady" | "queer";
 
 export const TRIBE_META: Record<
   TribeId,
@@ -73,6 +76,10 @@ export const TRIBE_META: Record<
   milady: {
     label: "Milady",
     blurb: "Remilia room. Reads as nothing unless the viewer already lives there.",
+  },
+  queer: {
+    label: "Queer room",
+    blurb: "In-group voice. Cold For You hears a slur. Not a sticker.",
   },
 };
 
@@ -201,15 +208,7 @@ function looksBrokenSyntax(t: string): boolean {
   return false;
 }
 
-/** Risk flag only. Never used as a "how to grow" suggestion. */
-function hasHateRisk(t: string): boolean {
-  const n = ` ${t.toLowerCase().replace(/[^a-z0-9#\s]/g, " ")} `;
-  const tokens = [
-    " nigger ", " nigga ", " kike ", " chink ",
-    " faggot ", " tranny ", " retard ",
-  ];
-  return tokens.some((w) => n.includes(w));
-}
+
 
 export function extractFeatures(text: string): DraftFeatures {
   const t = text.trim();
@@ -287,10 +286,22 @@ export function extractFeatures(text: string): DraftFeatures {
     !MILADY.test(t) &&
     (aiCraft || workflowBait) &&
     (aiCraft || operator || announce || agreeBait || listicle || workflowBait);
-  const tribe: TribeId = MILADY.test(t) ? "milady" : "none";
+  const slur = readSlurs(t);
+  const tribe: TribeId = MILADY.test(t)
+    ? "milady"
+    : slur.queerRoom || slur.reclaimed
+      ? "queer"
+      : "none";
   const costume = tribe !== "none" && (operator || announce || listicle);
-  const cursed = !operator && !aiReel && tribe === "none" && !isEmpty && looksBrokenSyntax(t);
-  const hateRisk = hasHateRisk(t);
+  const cursed =
+    !operator &&
+    !aiReel &&
+    tribe === "none" &&
+    !slur.hateRisk &&
+    !isEmpty &&
+    looksBrokenSyntax(t);
+  const hateRisk = slur.hateRisk;
+  const reclaimed = slur.reclaimed;
   const scene =
     (!operator &&
       !cursed &&
@@ -318,10 +329,7 @@ export function extractFeatures(text: string): DraftFeatures {
       /(send this|screenshot|cheat sheet|framework|playbook|weights?|copy this|pass this|group chat|here is|here's)/i.test(
         t,
       ),
-    rageBait:
-      /\b(idiot|stupid|clown|destroyed|ratio)\b|you won'?t believe|\bwake up\b/i.test(
-        t,
-      ),
+    rageBait: isRageBait(t),
     threadCue,
     mediaCue: /\[(image|video|photo|gif)\]|\.(png|jpg|gif|mp4)\b/i.test(t),
     allCapsTokens: (t.match(/\b[A-Z]{4,}\b/g) ?? []).length,
@@ -346,6 +354,7 @@ export function extractFeatures(text: string): DraftFeatures {
     lowercaseVoice,
     cursed,
     hateRisk,
+    reclaimed,
     aiReel,
     tribe,
     costume,

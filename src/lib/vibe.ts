@@ -30,6 +30,7 @@ export type VibeProfile = {
 
 const AESTHETIC: Record<string, string> = {
   milady: "Remilia / milady — cute-degens, in-group, private jokes",
+  queer: "Queer room — in-group voice, modifiers a cold feed will report",
   reel: "AI cinema/art — stills, generations, workflow-as-bait",
   operator: "Operator — lessons, announces, thoughts?",
   cursed: "Cursed — broken grammar as the joke",
@@ -53,8 +54,7 @@ export function inferVibe(texts: string[]): VibeProfile {
   const posts = texts.map((t) => t.trim()).filter((t) => t.length > 2);
   const counts = new Map<string, number>();
   const formatCounts = new Map<FormatId, number>();
-  let tribeVotes = 0;
-  let tribe: TribeId = "none";
+  const tribeCounts = new Map<TribeId, number>();
 
   for (const t of posts) {
     const f = extractFeatures(t);
@@ -63,8 +63,7 @@ export function inferVibe(texts: string[]): VibeProfile {
     counts.set(key, (counts.get(key) ?? 0) + 1);
     formatCounts.set(f.format, (formatCounts.get(f.format) ?? 0) + 1);
     if (f.tribe !== "none") {
-      tribeVotes += 1;
-      tribe = f.tribe;
+      tribeCounts.set(f.tribe, (tribeCounts.get(f.tribe) ?? 0) + 1);
     }
   }
 
@@ -72,23 +71,28 @@ export function inferVibe(texts: string[]): VibeProfile {
     .map(([id, n]) => ({
       id,
       n,
-      label: id === "milady" ? "Milady" : AESTHETIC[id]?.split(" — ")[0] ?? id,
+      label:
+        id === "milady"
+          ? "Milady"
+          : id === "queer"
+            ? "Queer room"
+            : AESTHETIC[id]?.split(" — ")[0] ?? id,
     }))
     .sort((a, b) => b.n - a.n);
 
   const top = mix[0];
   const samples = posts.length;
+  const topTribe = [...tribeCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+  let tribe: TribeId = "none";
+  if (topTribe && topTribe[1] >= 2) tribe = topTribe[0];
+  else if (topTribe && samples < 3) tribe = topTribe[0];
+
   const posture: LaneId =
-    top?.id === "milady"
+    tribe !== "none" || top?.id === "milady" || top?.id === "queer"
       ? "scene"
       : ((top?.id as LaneId) ?? "thin");
   const share = samples ? (top?.n ?? 0) / samples : 0;
   const confidence = Math.min(0.95, share * (samples >= 4 ? 1 : samples >= 2 ? 0.75 : 0.45));
-
-  if (tribeVotes < 2 && tribe !== "none" && samples >= 3) {
-    tribe = "none";
-  }
-  if (tribeVotes >= 2) tribe = "milady";
 
   const formatMix = [...formatCounts.entries()]
     .map(([id, n]) => ({
@@ -116,7 +120,9 @@ export function inferVibe(texts: string[]): VibeProfile {
   const aesthetic =
     tribe === "milady"
       ? AESTHETIC.milady
-      : top
+      : tribe === "queer"
+        ? AESTHETIC.queer
+        : top
         ? AESTHETIC[top.id] ?? top.label
         : AESTHETIC.empty;
 
@@ -133,6 +139,9 @@ export function inferVibe(texts: string[]): VibeProfile {
       : tribe === "milady"
         ? "You post from inside a room. Cold For You will bounce. Don't explain Remilia. Don't costume a fundraise." +
           cadenceNote
+        : tribe === "queer"
+          ? "In-group gay voice. A modifier in the room is a report on a cold For You. Don't industrialize it. Don't costume a fundraise with it." +
+            cadenceNote
         : posture === "operator"
           ? "You write like someone who posts on purpose. Screenshot + a real ask. Steal scene craft, not scene skin." +
             cadenceNote
