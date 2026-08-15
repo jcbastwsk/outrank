@@ -1,5 +1,6 @@
 (() => {
   const FALLBACKS = [
+    "https://outrank.coach",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://penguin.linux.test:3000",

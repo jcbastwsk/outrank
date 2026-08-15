@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Outrank — X algorithm coach",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Live reach coach on x.com, scored against the published For You weights.",
   "icons": {
     "16": "icons/icon16.png",
@@ -17,6 +17,8 @@
     "http://localhost:3000/*",
     "http://127.0.0.1:3000/*",
     "http://penguin.linux.test:3000/*",
+    "https://outrank.coach/*",
+    "https://www.outrank.coach/*",
     "https://x.com/*",
     "https://twitter.com/*"
   ],

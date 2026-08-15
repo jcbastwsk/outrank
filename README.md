@@ -27,6 +27,19 @@ Tweet Hunter / Typefully / SuperX guess. As of 13 Aug 2026 the weights are in th
 
 We will not help anyone evade visibility filters, spam rules, or abuse systems. Under the Hood is explained, not gamed.
 
+## Domain
+
+Production host: **https://outrank.coach**
+
+Deploy the GitHub repo to Vercel, add the domain, then at the registrar:
+
+| Type | Name | Value |
+| --- | --- | --- |
+| A | `@` | `10.0.1.2` (or whatever Vercel’s domain card shows) |
+| CNAME | `www` | `cname.vercel-dns.com` |
+
+Set Vercel env `NEXT_PUBLIC_APP_URL=https://outrank.coach` and `STRIPE_SECRET_KEY` (test until you go live).
+
 ## Run
 
 Needs Node 22+ on `PATH` (`~/.local/bin` on this machine).

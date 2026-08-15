@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { appUrl } from "../lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,7 +26,8 @@ export const metadata: Metadata = {
   },
   description:
     "X just published the For You ranking weights. Outrank watches every commit and coaches you, live, on how to get shown.",
-  metadataBase: new URL("http://localhost:3000"),
+  metadataBase: new URL(appUrl()),
+  alternates: { canonical: "/" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { planById, type PlanId } from "./plans";
+import { appUrl as siteAppUrl } from "./site";
 
 export function stripeConfigured() {
   return Boolean(process.env.STRIPE_SECRET_KEY);
@@ -14,10 +15,7 @@ export function getStripe() {
 }
 
 export function appUrl() {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
-    "http://127.0.0.1:3000"
-  );
+  return siteAppUrl();
 }
 
 export async function createCheckoutSession(planId: PlanId) {
