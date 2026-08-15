@@ -32,7 +32,7 @@ export function HoodDrop() {
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
           rows={18}
-          className="mono w-full resize-y rounded-xl border border-[var(--line)] bg-black/40 p-4 text-[12px] leading-5 outline-none focus:border-[var(--gold)]"
+          className="field mono resize-y p-4 text-[12px] leading-5"
         />
         <p className="mt-3 text-xs leading-5 text-[var(--muted)]">
           Settings → Under the Hood on X (pilot). We only explain published
@@ -44,7 +44,7 @@ export function HoodDrop() {
         <p className="mt-3 text-lg leading-7">{report.summary}</p>
         <ul className="mt-5 space-y-3">
           {report.findings.map((f) => (
-            <li key={f.label} className="rounded-2xl border border-[var(--line)] bg-black/25 p-4">
+            <li key={f.label} className="panel p-4">
               <div className="flex items-center justify-between gap-3">
                 <span className="mono text-xs text-[var(--gold)]">{f.label}</span>
                 <span

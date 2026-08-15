@@ -105,7 +105,7 @@ export function CuratorDesk() {
           type="password"
           value={key}
           onChange={(e) => setKey(e.target.value)}
-          className="mt-4 w-full rounded-xl border border-[var(--line)] bg-black/40 px-3 py-2"
+          className="field mt-4 px-3 py-2"
           placeholder="Curator key"
         />
         <button type="button" onClick={unlock} className="btn-gold mt-4 px-4 py-2 text-sm">
@@ -126,20 +126,20 @@ export function CuratorDesk() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={6}
-          className="w-full rounded-xl border border-[var(--line)] bg-black/40 p-3 text-sm leading-6 outline-none focus:border-[var(--gold)]"
+          className="field p-3 text-sm leading-6"
           placeholder="Paste the tweet that actually moved…"
         />
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="w-full rounded-xl border border-[var(--line)] bg-black/40 px-3 py-2 text-sm"
+          className="field px-3 py-2 text-sm"
           placeholder="URL (optional)"
         />
         <textarea
           value={context}
           onChange={(e) => setContext(e.target.value)}
           rows={4}
-          className="w-full rounded-xl border border-[var(--line)] bg-black/40 p-3 text-sm leading-6 outline-none focus:border-[var(--gold)]"
+          className="field p-3 text-sm leading-6"
           placeholder="Context only you have — who posted, what the room knew, why it hit…"
         />
         <div className="flex flex-wrap gap-2">
@@ -148,10 +148,8 @@ export function CuratorDesk() {
               key={o}
               type="button"
               onClick={() => setOutcome(o)}
-              className={`rounded-full border px-3 py-1 text-xs ${
-                outcome === o
-                  ? "border-[var(--gold)] text-[var(--gold)]"
-                  : "border-[var(--line)] text-[var(--muted)]"
+              className={`chip px-3 py-1 text-xs ${
+                outcome === o ? "text-[var(--gold)]" : ""
               }`}
             >
               {OUTCOME_LABEL[o]}
@@ -205,7 +203,7 @@ export function CuratorDesk() {
             <li className="text-sm text-[var(--muted)]">No cases yet.</li>
           )}
           {cases.map((c) => (
-            <li key={c.id} className="rounded-2xl border border-[var(--line)] bg-black/20 p-4">
+            <li key={c.id} className="panel p-4">
               <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-[var(--gold)]">
                 <span>{OUTCOME_LABEL[c.outcome]}</span>
                 <span className="text-[var(--muted)]">

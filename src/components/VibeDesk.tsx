@@ -44,7 +44,7 @@ export function VibeDesk({ compact = false }: { compact?: boolean }) {
           value={blob}
           onChange={(e) => setBlob(e.target.value)}
           rows={compact ? 5 : 10}
-          className="mt-3 w-full rounded-xl border border-[var(--line)] bg-black/40 p-3 text-sm leading-6 outline-none focus:border-[var(--gold)]"
+          className="field mt-3 p-3 text-sm leading-6"
           placeholder="Paste 3–8 recent posts. Blank line between each."
         />
         <div className="mt-3 flex gap-2">
@@ -75,14 +75,14 @@ export function VibeDesk({ compact = false }: { compact?: boolean }) {
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{profile.note}</p>
             <ul className="mt-4 flex flex-wrap gap-2 text-xs text-[var(--muted)]">
               {profile.mix.map((m) => (
-                <li key={m.id} className="rounded-full border border-[var(--line)] px-2 py-1">
+                <li key={m.id} className="chip px-2 py-1">
                   {m.label} · {m.n}
                 </li>
               ))}
               {(profile.formatMix ?? []).map((m) => (
                 <li
                   key={`fmt-${m.id}`}
-                  className="rounded-full border border-[var(--line-strong)] px-2 py-1 text-[var(--gold)]"
+                  className="chip px-2 py-1 text-[var(--gold)]"
                 >
                   {m.label} · {m.n}
                 </li>

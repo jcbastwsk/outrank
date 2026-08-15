@@ -36,7 +36,7 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
     <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
       {result.accountRisk && (
         <div
-          className="rounded-2xl border px-4 py-3 text-sm leading-6 lg:col-span-2"
+          className="panel px-4 py-3 text-sm leading-6 lg:col-span-2"
           style={{ borderColor: "var(--bad)", background: "rgba(255,93,93,0.08)", color: "var(--bad)" }}
         >
           <strong>Do not nuke the account.</strong> Replies can print. Reports
@@ -65,7 +65,7 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
             setPosted(false);
           }}
           rows={compact ? 7 : 10}
-          className="w-full resize-y rounded-xl border border-[var(--line)] bg-black/40 p-4 text-[15px] leading-7 outline-none focus:border-[var(--gold)]"
+          className="field resize-y p-4 text-[15px] leading-7"
           placeholder="Paste the post you're about to publish…"
         />
         <div className="mt-3 flex flex-wrap gap-2">
@@ -77,7 +77,7 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
                 setText(s.text);
                 setPosted(false);
               }}
-              className="rounded-full border border-[var(--line)] px-3 py-1 text-xs text-[var(--muted)] hover:text-[var(--ink)]"
+              className="chip px-3 py-1 text-xs"
             >
               {s.label}
             </button>
@@ -85,7 +85,7 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
           <button
             type="button"
             onClick={() => setPosted(true)}
-            className="ml-auto rounded-full border border-[var(--line-strong)] px-3 py-1 text-xs text-[var(--gold)]"
+            className="chip ml-auto px-3 py-1 text-xs text-[var(--gold)]"
           >
             I just posted this
           </button>
@@ -161,7 +161,7 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
         </p>
         <ul className="mt-4 grid gap-3 md:grid-cols-2">
           {(posted ? result.firstHour : result.plays).map((play) => (
-            <li key={play.id} className="rounded-2xl border border-[var(--line)] bg-black/25 p-4">
+            <li key={play.id} className="panel p-4">
               <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-[var(--gold)]">
                 {play.urgency}
               </div>

@@ -9,7 +9,7 @@ const NAV = [
   { href: "/app", label: "Command" },
   { href: "/app/coach", label: "Coach" },
   { href: "/app/radar", label: "Radar" },
-  { href: "/app/hood", label: "Under the Hood" },
+  { href: "/app/hood", label: "Hood" },
   { href: "/app/curate", label: "Curate" },
   { href: "/app/vibe", label: "Vibe" },
 ];
@@ -18,28 +18,34 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[#09090b]/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <Wordmark href="/app" />
-          <nav className="flex items-center gap-1 text-sm">
-            {NAV.map((item) => {
-              const active = path === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`rounded-full px-3 py-1.5 ${
-                    active
-                      ? "bg-[var(--gold)]/15 text-[var(--gold)]"
-                      : "text-[var(--muted)] hover:text-[var(--ink)]"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <BillingBar />
+      <header className="sticky top-0 z-30">
+        <div className="chrome-bar">
+          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-2 sm:px-5 md:h-16 md:flex-row md:items-center md:justify-between md:gap-3 md:py-0">
+            <div className="flex items-center justify-between gap-3">
+              <Wordmark href="/app" />
+              <div className="md:hidden">
+                <BillingBar />
+              </div>
+            </div>
+            <nav className="flex flex-1 items-center gap-1 overflow-x-auto text-sm">
+              {NAV.map((item) => {
+                const active = path === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    data-active={active}
+                    className="tab shrink-0"
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="hidden md:block">
+              <BillingBar />
+            </div>
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-5 py-8">{children}</main>

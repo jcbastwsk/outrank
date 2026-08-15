@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Geist, Instrument_Serif, Pixelify_Sans, VT323 } from "next/font/google";
 import { appUrl } from "../lib/site";
 import "./globals.css";
 
@@ -8,13 +8,19 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const instrument = Instrument_Serif({
+  variable: "--font-instrument",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const pixel = Pixelify_Sans({
+  variable: "--font-pixel",
   subsets: ["latin"],
 });
 
-const instrument = Instrument_Serif({
-  variable: "--font-instrument",
+const vt = VT323({
+  variable: "--font-vt",
   subsets: ["latin"],
   weight: "400",
 });
@@ -34,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${instrument.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${instrument.variable} ${pixel.variable} ${vt.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

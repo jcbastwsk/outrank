@@ -17,7 +17,7 @@ export default async function CommandPage({
   return (
     <div className="space-y-8">
       {welcome && (
-        <p className="rounded-2xl border border-[var(--line-strong)] bg-[var(--gold)]/10 px-4 py-3 text-sm">
+        <p className="panel px-4 py-3 text-sm text-[var(--gold)]">
           {welcome === "studio" ? "Studio" : "Pro"} is unlocked in this browser.
           The extension uses the same local API.
         </p>
@@ -58,7 +58,7 @@ export default async function CommandPage({
         </div>
         <ul className="mt-4 grid gap-3 md:grid-cols-2">
           {plays.map((p) => (
-            <li key={p.id} className="rounded-2xl border border-[var(--line)] bg-black/20 p-4">
+            <li key={p.id} className="panel p-4">
               <div className="text-[11px] uppercase tracking-[0.14em] text-[var(--gold)]">
                 {p.urgency}
               </div>

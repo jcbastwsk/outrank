@@ -22,8 +22,9 @@ export default function Home() {
       <main className="flex-1">
         <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-8 pt-16 lg:grid-cols-[1.1fr_0.9fr] lg:pt-24">
           <div>
-            <p className="mono text-xs uppercase tracking-[0.22em] text-[var(--gold)]">
-              Watching {ALGO_SOURCE.repo} · snapshot {ALGO_SOURCE.snapshotAt.slice(0, 10)}
+            <p className="mono text-[15px] text-[var(--cyan)]">
+              <span className="live-dot" />
+              watching {ALGO_SOURCE.repo} · snapshot {ALGO_SOURCE.snapshotAt.slice(0, 10)}
             </p>
             <h1 className="serif mt-4 text-5xl leading-[1.05] tracking-tight md:text-7xl">
               The algorithm is public.
@@ -62,8 +63,8 @@ export default function Home() {
           </div>
           <div className="scanline card overflow-hidden">
             <Image
-              src="/hero.jpg"
-              alt="Outrank at the desk"
+              src="/hero2.jpg"
+              alt="A CRT on a particle-board desk, starfield tapestry, lava lamp"
               width={1600}
               height={900}
               className="h-full w-full object-cover"
@@ -72,11 +73,13 @@ export default function Home() {
           </div>
         </section>
 
+        <hr className="sparkle-hr mx-auto max-w-6xl" />
+
         <section id="weights" className="mx-auto max-w-6xl px-5 py-16">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="mono text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
-                Live published weights
+              <p className="mono text-[15px] text-[var(--gold)]">
+                ★ live published weights ★
               </p>
               <h2 className="serif mt-2 text-4xl">Not vibes. The actual heads.</h2>
             </div>
@@ -185,7 +188,7 @@ export default function Home() {
         </section>
 
         <section className="mx-auto max-w-6xl px-5 pb-20">
-          <div className="flex flex-col items-start justify-between gap-6 rounded-[28px] border border-[var(--line)] bg-[var(--bg-card)] p-8 md:flex-row md:items-center md:p-12">
+          <div className="card flex flex-col items-start justify-between gap-6 p-8 md:flex-row md:items-center md:p-12">
             <div>
               <h2 className="serif text-4xl">$19 / month. Operators pay. Scene is the tail.</h2>
               <p className="mt-3 max-w-xl text-[var(--muted)]">

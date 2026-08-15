@@ -21,7 +21,7 @@ export default async function PricingPage({
           blog post is stale before you finish it. The product is the watch.
         </p>
         {canceled && (
-          <p className="mt-6 rounded-2xl border border-[var(--line)] bg-black/30 px-4 py-3 text-sm text-[var(--muted)]">
+          <p className="panel mt-6 px-4 py-3 text-sm text-[var(--muted)]">
             Checkout canceled. Nothing was charged.
           </p>
         )}

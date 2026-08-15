@@ -38,7 +38,7 @@ export function BillingBar() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="rounded-full bg-[var(--gold)]/15 px-3 py-1.5 text-xs uppercase tracking-[0.12em] text-[var(--gold)]">
+      <span className="tab text-[var(--gold)]">
         {status.plan}
       </span>
       <ManageBilling />
