@@ -49,7 +49,13 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
         <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
           <span>Draft</span>
           <span className="mono">
-            {FORMAT_META[result.format].label} · {result.features.chars}
+            {FORMAT_META[result.format].label}
+            {result.features.wall ? " · wall" : ""}
+            {" · "}
+            {result.features.chars}
+            {result.features.paragraphs > 1
+              ? ` · ${result.features.paragraphs}¶`
+              : ""}
           </span>
         </div>
         <textarea
@@ -100,6 +106,10 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
               {result.lane.label}
               {" · "}
               {FORMAT_META[result.format].label}
+              {result.features.wall ? " · wall" : ""}
+            </p>
+            <p className="mt-1 text-[12px] leading-5 text-[var(--muted)]">
+              {FORMAT_META[result.format].blurb}
             </p>
           </div>
           <div className="text-right text-xs text-[var(--muted)]">

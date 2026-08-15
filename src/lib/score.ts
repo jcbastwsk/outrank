@@ -25,6 +25,12 @@ export type DraftFeatures = {
   isEmpty: boolean;
   format: FormatId;
   paragraphs: number;
+  /** Unstructured brick. Length without breaks trains scroll-past, not dwell. */
+  wall: boolean;
+  /** First ~200 characters announce the piece instead of making a claim. */
+  ledeWeak: boolean;
+  /** "I wrote an article" without the article. */
+  articleAnnounce: boolean;
   /** Unfinished claim that begs "wait, what?" — the NK tweet shape. */
   openLoop: boolean;
   hedged: boolean;
@@ -53,6 +59,9 @@ export const FORMAT_META: Record<FormatId, { label: string; blurb: string }> = {
   article: { label: "Article", blurb: "Click + dwell + copy-link. The headline is the candidate." },
   thread: { label: "Thread", blurb: "Tweet 1 is what Phoenix ranks. The rest is optional." },
 };
+
+const WEAK_LEDE =
+  /^(i (just )?(wrote|published|dropped|posted)( an?)?( article| essay| piece| thread| blog)?|new (article|essay|blog|post|thread)\b|a few thoughts\b|thread:|👇|read (the )?(rest|more|below|full))/i;
 
 export type TribeId = "none" | "milady";
 
@@ -213,24 +222,40 @@ export function extractFeatures(text: string): DraftFeatures {
   const isShort = t.length > 0 && t.length < 90;
   const isEmpty = t.length < 8;
   const paragraphs = t.split(/\n\s*\n/).filter((p) => p.trim().length > 0).length;
-  const threadCue = /(^\s*1\/|\bthread\b|a few thoughts|let me explain)/im.test(t);
-  const articleCue =
-    paragraphs >= 5 ||
-    t.length > 1500 ||
-    /(^#{1,3}\s|i wrote (an? )?(essay|article|piece)|read the (rest|full)|full (essay|article))/im.test(
+  const lineBreaks = (t.match(/\n/g) ?? []).length;
+  const articleLang =
+    /(^#{1,3}\s|i wrote (an? )?(essay|article|piece)|read the (rest|full)|full (essay|article)|new (essay|article))/im.test(
       t,
     );
+  const structured =
+    paragraphs >= 4 ||
+    /^#{1,3}\s/m.test(t) ||
+    /^(I{1,3}|IV|V|VI)\.\s/m.test(t) ||
+    (paragraphs >= 3 && t.length > 600);
+  const wall = t.length > 400 && paragraphs <= 2 && lineBreaks < 4;
+  // "workflow in the thread" is reply-bait, not a thread. Require an announce.
+  const threadCue =
+    /^\s*(🧵\s*)?\d+\s*\/\s*\d*/m.test(t) ||
+    /\b(a thread|thread:|in this thread)\b/i.test(t);
+  const articleCue =
+    !wall &&
+    (paragraphs >= 5 ||
+      (t.length > 900 && structured) ||
+      (articleLang && t.length > 360 && paragraphs >= 3));
   const format: FormatId = threadCue
     ? "thread"
     : articleCue
       ? "article"
-      : t.length > 400
+      : t.length > 280
         ? "long"
         : t.length >= 90
           ? "short"
           : "micro";
+  const articleAnnounce = articleLang && !articleCue && t.length < 400;
+  const ledeWeak = WEAK_LEDE.test(t.replace(/\s+/g, " ").slice(0, 200));
   const hasUrl = /https?:\/\/|www\./i.test(t);
-  const openLoop = OPEN_LOOP.test(t);
+  const hookWindow = t.slice(0, format === "micro" || format === "short" ? 280 : 160);
+  const openLoop = OPEN_LOOP.test(hookWindow);
   const hedged = HEDGED.test(t);
   const firstPerson = FIRST_PERSON.test(t);
   const chargedTopic = CHARGED.test(t);
@@ -249,6 +274,10 @@ export function extractFeatures(text: string): DraftFeatures {
     hashtags === 0 &&
     emoji <= 1 &&
     !operator &&
+    !articleAnnounce &&
+    format !== "article" &&
+    format !== "long" &&
+    format !== "thread" &&
     (proper > 0 || chargedTopic || lowercaseVoice) &&
     (openLoop || hedged || firstPerson || sceneVoice);
   const aiCraft = AI_TOOL.test(t) || CINEMA_LEX.test(t);
@@ -301,6 +330,9 @@ export function extractFeatures(text: string): DraftFeatures {
     isEmpty,
     format,
     paragraphs,
+    wall,
+    ledeWeak,
+    articleAnnounce,
     openLoop,
     hedged,
     firstPerson,
@@ -374,7 +406,7 @@ export function classifyLane(f: DraftFeatures): Lane {
       blurb: "Fat-tail OC. Lands if the room already has the context. Not a template.",
     };
   }
-  if (f.shareable || (f.numbers >= 2 && f.isLong)) {
+  if (f.shareable || (f.numbers >= 2 && f.isLong && !f.wall)) {
     return {
       id: "portable",
       label: "Portable",
@@ -459,7 +491,7 @@ export function estimateProbabilities(
     p.contDwellTime += 6;
   }
 
-  if (f.operator && !f.aiReel && f.tribe === "none") {
+  if (f.operator && !f.aiReel && f.tribe === "none" && !f.wall) {
     p.shareViaCopyLink += 0.04;
     p.shareViaDm += 0.012;
     p.favorite += 0.04;
@@ -469,7 +501,7 @@ export function estimateProbabilities(
     p.contDwellTime += f.listicle || f.isLong ? 10 : 4;
     p.notDwelled -= 0.06;
   }
-  if (f.announce && f.operator && !f.aiReel && f.tribe === "none") {
+  if (f.announce && f.operator && !f.aiReel && f.tribe === "none" && !f.wall) {
     p.followAuthor += 0.02;
     p.click += 0.03;
   }
@@ -544,32 +576,53 @@ export function estimateProbabilities(
     p.favorite += 0.015;
     p.contDwellTime += 4;
   }
-  if (f.format === "long" && !f.hasUrl) {
-    p.contDwellTime += 10;
+  // Structured long / article / thread: click + dwell + copy-link.
+  // A brick of the same length is the opposite — thumb trains NotDwelled.
+  if (f.format === "long" && !f.hasUrl && !f.wall) {
+    p.contDwellTime += 12;
     p.dwell += 0.1;
-    p.click += 0.05;
-    p.shareViaCopyLink += 0.015;
+    p.click += f.ledeWeak ? 0.03 : 0.08;
+    p.shareViaCopyLink += f.ledeWeak ? 0.01 : 0.032;
     p.notDwelled -= 0.08;
+    p.reply -= 0.008;
   }
-  if (f.format === "article") {
-    p.click += 0.12;
-    p.contDwellTime += 18;
+  if (f.format === "article" && !f.wall) {
+    p.click += f.ledeWeak ? 0.04 : 0.12;
+    p.contDwellTime += f.ledeWeak ? 6 : 18;
     p.dwell += 0.12;
     p.shareViaCopyLink += 0.03;
     p.shareViaDm += 0.01;
-    p.reply -= 0.01;
-    p.notDwelled -= 0.1;
+    p.reply -= 0.012;
+    p.notDwelled -= f.ledeWeak ? 0.02 : 0.1;
   }
   if (f.format === "thread") {
-    p.click += 0.06;
+    p.click += f.ledeWeak ? 0.02 : 0.06;
     p.contDwellTime += 12;
     p.dwell += 0.08;
   }
-  if (f.isLong && !f.hasUrl && f.format === "short") {
+  if (f.isLong && !f.hasUrl && f.format === "short" && !f.wall) {
     p.contDwellTime += 8;
     p.dwell += 0.08;
     p.notDwelled -= 0.07;
     p.click += 0.02;
+  }
+  if (f.wall) {
+    p.shareViaCopyLink -= 0.028;
+    p.shareViaDm -= 0.008;
+    p.reply -= 0.025;
+    p.quote -= 0.012;
+    p.followAuthor -= 0.015;
+    p.favorite -= 0.02;
+    p.notDwelled += 0.16;
+    p.dwell -= 0.12;
+    p.contDwellTime -= 10;
+    p.click -= 0.03;
+    p.notInterested += 0.01;
+  }
+  if (f.ledeWeak || f.articleAnnounce) {
+    p.click -= 0.04;
+    p.notDwelled += 0.05;
+    p.followAuthor -= 0.008;
   }
   // Short is only thin when it has nothing to stop on.
   if (
@@ -700,7 +753,16 @@ export function scoreDraft(text: string): ScoreResult {
     thin: `Thin. ${lane.blurb}`,
     portable: `Portable. ${lane.blurb} Scoring on ${headBit}.`,
   };
-  const headline = headlines[lane.id];
+  const formatNote = features.wall
+    ? " Wall of text — that trains scroll-past, not dwell."
+    : features.articleAnnounce
+      ? " That's an article announcement, not the article."
+      : features.format === "article" ||
+          features.format === "long" ||
+          features.format === "thread"
+        ? ` ${FORMAT_META[features.format].blurb}`
+        : "";
+  const headline = headlines[lane.id] + formatNote;
 
   return {
     features,

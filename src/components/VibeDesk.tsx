@@ -65,10 +65,25 @@ export function VibeDesk({ compact = false }: { compact?: boolean }) {
               {Math.round(profile.confidence * 100)}% · {profile.samples} posts
             </p>
             <p className="serif mt-2 text-3xl">{profile.aesthetic.split(" — ")[0]}</p>
+            <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-[var(--gold)]">
+              {profile.cadence === "essayist"
+                ? "Essay cadence"
+                : profile.cadence === "sprinter"
+                  ? "Short cadence"
+                  : "Mixed cadence"}
+            </p>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{profile.note}</p>
             <ul className="mt-4 flex flex-wrap gap-2 text-xs text-[var(--muted)]">
               {profile.mix.map((m) => (
                 <li key={m.id} className="rounded-full border border-[var(--line)] px-2 py-1">
+                  {m.label} · {m.n}
+                </li>
+              ))}
+              {(profile.formatMix ?? []).map((m) => (
+                <li
+                  key={`fmt-${m.id}`}
+                  className="rounded-full border border-[var(--line-strong)] px-2 py-1 text-[var(--gold)]"
+                >
                   {m.label} · {m.n}
                 </li>
               ))}

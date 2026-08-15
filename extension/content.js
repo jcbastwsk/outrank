@@ -51,7 +51,7 @@
     body.innerHTML = `
       <div class="or-score">
         <b>${state.reach}</b>
-        <span>${state.grade} · raw ${Number(state.rawScore).toFixed(2)}</span>
+        <span>${state.grade}${state.format ? ` · ${escapeHtml(state.format)}` : ""} · raw ${Number(state.rawScore).toFixed(2)}</span>
       </div>
       <p class="or-head-line">${escapeHtml(state.headline || "")}</p>
       ${

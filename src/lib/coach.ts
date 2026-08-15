@@ -92,7 +92,25 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
     });
   }
 
-  if (f.format === "article") {
+  if (f.wall) {
+    plays.push({
+      id: "wall",
+      urgency: "now",
+      title: "This is a brick. Cut it or break it.",
+      why: "Length without paragraph breaks is not an article. Viewers train NotDwelled (−0.02 each) and never generate the click (0.4) or dwell (0.004/s) a real essay earns. Same AgeFilter as a shitpost — 48 hours.",
+      source: "NotDwelledWeight + ClickWeight + ContDwellTimeWeight",
+    });
+  }
+  if (f.articleAnnounce) {
+    plays.push({
+      id: "article-announce",
+      urgency: "now",
+      title: "Don't announce the article. Be the first line.",
+      why: "Phoenix ranks this teaser, not the piece below the fold. 'I wrote an article' is a like farm. Put the claim in sentence one. Body — or the actual X Article — is for the people who click.",
+      source: "ClickWeight + ShareViaCopyLinkWeight",
+    });
+  }
+  if (f.format === "article" && !f.articleAnnounce) {
     plays.push({
       id: "article-lede",
       urgency: "now",
@@ -101,7 +119,7 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
       source: "ClickWeight + ContDwellTimeWeight + ShareViaCopyLinkWeight",
     });
   }
-  if (f.format === "long" && !f.openLoop) {
+  if (f.wall || (f.format === "long" && f.ledeWeak)) {
     plays.push({
       id: "long-first-line",
       urgency: "now",
@@ -110,13 +128,26 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
       source: "AgeFilter 48h + first-candidate scoring",
     });
   }
-  if (f.format === "micro" && score.lane.id === "thin") {
+  if (
+    (f.format === "micro" || f.format === "short") &&
+    score.lane.id === "thin" &&
+    !f.articleAnnounce
+  ) {
     plays.push({
       id: "micro-or-essay",
       urgency: "next",
       title: "Either one breath or an article — not a soggy paragraph",
-      why: "Micro needs a loop or a wreck. Articles need a lede and dwell. The dead zone is 120 characters of advice with no ask.",
+      why: "Micro needs a loop or a wreck. Articles need a lede and dwell. The dead zone is 80–280 characters of advice with no ask — too long to stop the thumb, too short to be the piece.",
       source: "Format prior",
+    });
+  }
+  if (score.lane.id === "operator" && (f.wall || f.format === "long") && !f.listicle) {
+    plays.push({
+      id: "operator-cut",
+      urgency: "now",
+      title: "One lesson. Not a diary.",
+      why: "Operator posts score on a screenshottable line plus an ask. A 1,000-character recap is LinkedIn-in-the-composer. Cut to the numbered list or publish it as an article with a lede.",
+      source: "ShareViaCopyLinkWeight + format prior",
     });
   }
 
@@ -149,7 +180,7 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
     }
   }
 
-  if (score.lane.id === "operator") {
+  if (score.lane.id === "operator" && !f.wall) {
     plays.push({
       id: "operator-screenshot",
       urgency: "now",
@@ -215,6 +246,36 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
     });
   }
 
+  if (
+    vibe &&
+    vibe.samples >= 3 &&
+    vibe.cadence === "sprinter" &&
+    (f.format === "article" || f.format === "long" || f.wall)
+  ) {
+    plays.push({
+      id: "format-mismatch",
+      urgency: "next",
+      title: "Your room knows you as one breath",
+      why: `Your last ${vibe.samples} posts are shorts. An essay from a sprinter account reads like a different person unless the first line would work as one of your tweets. Phoenix is per-viewer.`,
+      source: "Per-viewer Phoenix + format cadence",
+    });
+  }
+  if (
+    vibe &&
+    vibe.samples >= 3 &&
+    vibe.cadence === "essayist" &&
+    (f.format === "micro" || f.format === "short") &&
+    score.lane.id === "thin"
+  ) {
+    plays.push({
+      id: "format-mismatch-essay",
+      urgency: "next",
+      title: "Your readers click. This is a status update.",
+      why: "You usually ship long/article. A thin short from an essay account doesn't generate the click + dwell your graph is trained on. Either write the piece or cut to a claim.",
+      source: "Per-viewer Phoenix + format cadence",
+    });
+  }
+
   if (f.tribe === "milady") {
     plays.push({
       id: "milady-room",
@@ -236,7 +297,15 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
     }
   }
 
-  if ((score.lane.id === "scene" || f.openLoop || f.deadpan) && !f.cursed && !f.hateRisk && f.tribe === "none") {
+  if (
+    (score.lane.id === "scene" || f.openLoop || f.deadpan) &&
+    !f.cursed &&
+    !f.hateRisk &&
+    f.tribe === "none" &&
+    !f.wall &&
+    f.format !== "article" &&
+    f.format !== "long"
+  ) {
     plays.push({
       id: "keep-loop",
       urgency: "now",
@@ -272,7 +341,10 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
     !f.cursed &&
     !f.hateRisk &&
     f.tribe === "none" &&
-    !f.isEmpty
+    !f.isEmpty &&
+    !f.wall &&
+    f.format !== "article" &&
+    f.format !== "long"
   ) {
     plays.push({
       id: "invite-reply",
@@ -292,7 +364,10 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
     !f.cursed &&
     !f.hateRisk &&
     f.tribe === "none" &&
-    !f.isEmpty
+    !f.isEmpty &&
+    !f.wall &&
+    f.format !== "article" &&
+    !f.articleAnnounce
   ) {
     plays.push({
       id: "make-portable",
@@ -355,7 +430,7 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
     });
   }
 
-  if (f.threadCue) {
+  if (f.format === "thread") {
     plays.push({
       id: "thread",
       urgency: "next",
@@ -405,6 +480,16 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
       source: "home-mixer AgeFilter",
     },
   ];
+
+  if (f.format === "article" || (f.format === "long" && !f.wall)) {
+    firstHour.unshift({
+      id: "essay-stay",
+      urgency: "now",
+      title: "Stay for the people who click, not a reply pile",
+      why: "Long-form scores on click (0.4), dwell (0.004/s), and copy-link (20). Don't post a summary tweet after it — author diversity will discount both.",
+      source: "ClickWeight + ContDwellTimeWeight + AuthorDiversityDecay",
+    });
+  }
 
   if (!f.isEmpty && plays.length === 0) {
     plays.push({
@@ -460,6 +545,18 @@ Almost nobody. The people who copy the URL are the whole game.
 
 III. What to do
 Put the claim in sentence one. Body is for the few who click.`,
+  },
+  {
+    label: "Long",
+    text: `The first 200 characters are the post. Everything after that is optional.
+
+Phoenix does not rank your word count. It ranks a candidate in a slate. Click 0.4. Dwell 0.004 a second. Copy-link 20. Same 48-hour AgeFilter as a joke.
+
+If line one is "I've been thinking," you already lost the thumb. Put the claim where a tweet would go. Let the rest earn the people who stopped.`,
+  },
+  {
+    label: "Wall",
+    text: "I have been thinking a lot about distribution lately and I wanted to share some thoughts because I think people get this wrong. Distribution is not something you add later it is the whole product and if you wait until the thing is finished you already lost. Most founders I talk to still treat it like a marketing problem when it is really a design problem and the earlier you start the easier it gets. I wish someone had told me this ten years ago when I was still hiding in the building phase. Anyway here is what I have learned after a decade of shipping things that nobody saw. You have to be in the feed every day you have to have a point of view and you have to make things people can send. That is the whole game. I will write more about this later. Consistency is the real growth hack if I am being honest and I think a lot of people are going to disagree with me but that is fine.",
   },
   {
     label: "Soft take",

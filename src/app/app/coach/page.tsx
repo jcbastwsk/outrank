@@ -8,8 +8,9 @@ export default function CoachPage() {
         <h1 className="serif text-4xl">Score the post before it ships</h1>
         <p className="mt-2 max-w-2xl text-[var(--muted)]">
           Estimates Phoenix action probabilities from the text, then applies
-          the published production weights. The Chrome extension does the same
-          thing on x.com.
+          the published production weights. Micro, short, long, article, and
+          thread are not the same candidate. The Chrome extension does the
+          same thing on x.com.
         </p>
       </div>
       <DraftCoach />
