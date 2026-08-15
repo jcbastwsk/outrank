@@ -36,6 +36,13 @@ export function todaysPlays(): Play[] {
       source: "home-mixer/params/param.rs → ReplyWeight, QuoteWeight",
     },
     {
+      id: "fat-tail",
+      urgency: "next",
+      title: "Steal the shape from scene OC, not the in-jokes",
+      why: "A fat tail of posters mint original posts that only mean something in a room they already trained. Phoenix is per-viewer. OON is ×0.75. Operators buy the tool; they should copy the unfinished one-breath shape, not pretend they are that account.",
+      source: "OonWeightFactor + per-viewer Phoenix",
+    },
+    {
       id: "mutuals",
       urgency: "now",
       title: "Ship originals to mutuals, not reply-guy content",
@@ -136,8 +143,15 @@ export function coachDraft(score: ScoreResult): CoachResult {
       id: "keep-loop",
       urgency: "now",
       title: "Do not explain it in the same post",
-      why: "Scene posts live on reply and quote. Spell it out and it becomes a blog sentence. Answer in the replies — each one is weight 5.",
+      why: "The replies exist because the thought is unfinished. Spell it out and you get a blog sentence. Answer in the replies — each one is weight 5.",
       source: "ReplyWeight / QuoteWeight — scene prior",
+    });
+    plays.push({
+      id: "scene-context",
+      urgency: "next",
+      title: "This only hits a room you already trained",
+      why: "Fat-tail OC. Phoenix scores per viewer. Mutuals who have been eating your last 20 posts will reply. A cold OON viewer (×0.75) sees a fragment. Don't industrialize this. If you sell to operators, steal the one-breath shape — not the in-joke.",
+      source: "OonWeightFactor 0.75 + per-viewer Phoenix",
     });
     if (f.isLong) {
       plays.push({

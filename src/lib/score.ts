@@ -274,7 +274,7 @@ export function classifyLane(f: DraftFeatures): Lane {
     return {
       id: "scene",
       label: "Scene",
-      blurb: "Weird Twitter. Open loop. People reply to finish the thought.",
+      blurb: "Fat-tail OC. Lands if the room already has the context. Not a template.",
     };
   }
   if (f.shareable || (f.numbers >= 2 && f.isLong)) {

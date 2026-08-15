@@ -30,9 +30,10 @@ export default function Home() {
               <span className="gold-text"> We watch it for you.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-[var(--muted)]">
-              Yesterday X shipped the real For You weights. Outrank is a paid
-              coach that diffs every commit, scores your draft against the
-              published formula, and tells you what to do in the next hour.
+              Built for people who post for a living. We also read the fat tail
+              of scene OC — the unfinished posts that only mean something in a
+              room you already trained — so you can steal the shape, not the
+              costume.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/app/coach" className="btn-gold px-6 py-3 text-sm">
@@ -152,7 +153,7 @@ export default function Home() {
               {
                 n: "02",
                 t: "Compose coach",
-                d: "Chrome extension on x.com plus a web coach. Score the draft against the published formula while you type. Move the link. Ask the question. Kill the hashtag pile.",
+                d: "Chrome extension plus a web coach. Operator drafts get copy-link + a real ask. Scene drafts get a context check: this only lands if the last 20 posts trained the reader.",
               },
               {
                 n: "03",
@@ -186,10 +187,10 @@ export default function Home() {
         <section className="mx-auto max-w-6xl px-5 pb-20">
           <div className="flex flex-col items-start justify-between gap-6 rounded-[28px] border border-[var(--line)] bg-[var(--bg-card)] p-8 md:flex-row md:items-center md:p-12">
             <div>
-              <h2 className="serif text-4xl">$19 / month. Built for people who post.</h2>
+              <h2 className="serif text-4xl">$19 / month. Operators pay. Scene is the tail.</h2>
               <p className="mt-3 max-w-xl text-[var(--muted)]">
-                Free reads the weights. Pro watches them, scores every draft,
-                and rides shotgun in Chrome.
+                Buyers are people who post on purpose. The weirdo tail mints
+                original posts we still have to score — Phoenix already does.
               </p>
             </div>
             <Link href="/pricing" className="btn-gold px-6 py-3 text-sm">

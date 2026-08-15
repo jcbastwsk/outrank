@@ -1,7 +1,9 @@
 # Outrank — partner look
 
 **Date:** 15 Aug 2026  
-**What this is:** a paid Chrome extension + web coach that watches X’s open-sourced For You algorithm and tells creators how to get shown.
+**What this is:** a paid Chrome extension + web coach that watches X’s open-sourced For You algorithm and tells **operators** (people who post for a living) how to get shown.
+
+Buyer is not “weird Twitter.” A fat tail of scene accounts mint original posts that only mean something in a room they already trained. We score that shape so a paying operator can steal the one-breath unfinished craft — not pretend they are that account. Phoenix is per-viewer; OON is ×0.75. Context is the missing variable.
 
 X published the real ranking weights on 13 Aug 2026 (`xai-org/x-algorithm`). Existing tools (Tweet Hunter, Typefully, SuperX) still guess. Outrank reads the published formula:
 
@@ -72,7 +74,7 @@ Stripe Checkout is wired. Test mode works once `STRIPE_SECRET_KEY` is in `.env.l
 
 1. Does the wedge land? (“We watch the open-source ranker” vs another growth tool.)
 2. Are $19 / $49 the right rungs?
-3. Who is buyer #1 — creators, agencies, or operators with multiple accounts?
+3. Who is buyer #1 — operators / creators who post on purpose? (Scene is supply of OC, not the ICP.)
 4. Anything here we should not say in public (legal / X ToS / “maximize reach” framing)?
 
 Reply on those four. The rest is implementation.
