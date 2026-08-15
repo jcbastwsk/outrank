@@ -240,6 +240,16 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
       (vibe?.posture === "reel" && score.lane.id === "operator" && !f.aiReel));
 
   const handleKind = vibe?.handleKind;
+  if (vibe?.desk === "split") {
+    plays.push({
+      id: "desk-split",
+      urgency: "now",
+      title: "Fix the desk before you ship another original",
+      why: "Name, @, bio, and pin already disagree. Phoenix has a viewer-side model. Another costume on top of a split profile is how you look like a different account.",
+      source: "Identity workshop + per-viewer Phoenix",
+    });
+  }
+
   if (handleKind === "named" && f.cursed && !f.hateRisk) {
     plays.push({
       id: "named-desk",

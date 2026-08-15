@@ -7,6 +7,7 @@ import {
   classifyLane,
 } from "./score";
 import { classifyHandle, type HandleKind } from "./handle";
+import type { DeskKind } from "./identity";
 
 export type FormatCadence = "sprinter" | "mixed" | "essayist";
 
@@ -29,6 +30,7 @@ export type VibeProfile = {
   note: string;
   handle?: string;
   handleKind?: HandleKind;
+  desk?: DeskKind;
 };
 
 const AESTHETIC: Record<string, string> = {

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { coachDraft, SAMPLE_DRAFTS, type CoachResult } from "../lib/coach";
 import { FORMAT_META, scoreDraft } from "../lib/score";
 import { classifyHandle, HANDLE_KEY } from "../lib/handle";
+import { loadIdentity, workshopIdentity } from "../lib/identity";
 import { VIBE_KEY, type VibeProfile } from "../lib/vibe";
 
 function gradeColor(g: string) {
@@ -31,22 +32,27 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
         next = null;
       }
     }
-    if (handle?.handle) {
+    const ident = loadIdentity();
+    const shop = ident ? workshopIdentity(ident) : null;
+    const kind = shop?.handle.kind ?? handle?.kind;
+    const who = shop?.handle.handle ?? handle?.handle;
+    if (who) {
       next = {
         ...(next ?? {
           updatedAt: new Date().toISOString(),
           samples: 0,
           posture: "thin",
           tribe: "none",
-          aesthetic: handle.label,
+          aesthetic: shop?.headline ?? handle?.label ?? "Unknown",
           confidence: 0.4,
           mix: [],
           formatMix: [],
           cadence: "mixed",
-          note: handle.blurb,
+          note: shop?.headline ?? handle?.blurb ?? "",
         }),
-        handle: handle.handle,
-        handleKind: handle.kind,
+        handle: who,
+        handleKind: kind,
+        desk: shop?.desk,
       };
     }
     if (next) setVibe(next);

@@ -7,6 +7,7 @@ import {
   saveHandle,
   type HandleRead,
 } from "../lib/handle";
+import { emptyIdentity, loadIdentity, saveIdentity } from "../lib/identity";
 
 export function HandleChip({ compact = false }: { compact?: boolean }) {
   const [value, setValue] = useState("");
@@ -24,6 +25,9 @@ export function HandleChip({ compact = false }: { compact?: boolean }) {
     const next = saveHandle(raw);
     setValue(next.display || raw);
     setRead(next.handle ? next : null);
+    const ident = loadIdentity() ?? emptyIdentity();
+    ident.handle = next.handle;
+    saveIdentity(ident);
   }
 
   return (

@@ -169,6 +169,10 @@ a {
   color: var(--ink);
   border-color: var(--cyan);
 }
+.chip[data-active="true"] {
+  border-style: inset;
+  color: var(--gold);
+}
 
 .field {
   width: 100%;
