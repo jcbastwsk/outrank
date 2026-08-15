@@ -71,6 +71,18 @@ export function CheckoutButton({
         </button>
       )}
       {err && <p className="text-xs leading-5 text-[var(--bad)]">{err}</p>}
+      <p className="text-[11px] leading-5 text-[var(--muted)]">
+        Checkout is a monthly Stripe subscription. By continuing you agree to
+        the{" "}
+        <a href="/terms" className="text-[var(--cyan)] underline">
+          Terms
+        </a>{" "}
+        and{" "}
+        <a href="/privacy" className="text-[var(--cyan)] underline">
+          Privacy Policy
+        </a>
+        . Cancel anytime in Billing.
+      </p>
     </div>
   );
 }

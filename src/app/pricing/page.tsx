@@ -75,11 +75,16 @@ export default async function PricingPage({
           ))}
         </div>
         <p className="mt-10 max-w-2xl text-sm leading-6 text-[var(--muted)]">
-          Subscriptions run through Stripe Checkout. Add{" "}
-          <span className="mono">STRIPE_SECRET_KEY</span> to{" "}
-          <span className="mono">.env.local</span> for live/test charges. Without
-          a key, local dev can still unlock a plan so you can try the gates. We
-          will not help anyone evade X visibility or spam systems.
+          Monthly Stripe subscription.{" "}
+          <Link href="/terms" className="text-[var(--cyan)] underline">
+            Terms
+          </Link>
+          {" · "}
+          <Link href="/privacy" className="text-[var(--cyan)] underline">
+            Privacy
+          </Link>
+          . Cancel in Billing. We will not help anyone evade X visibility or
+          spam systems.
         </p>
       </main>
       <SiteFooter />

@@ -49,6 +49,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-5 py-8">{children}</main>
+      <p className="mx-auto max-w-6xl px-5 pb-8 text-[11px] text-[var(--muted)]">
+        <Link href="/terms" className="hover:text-[var(--cyan)]">
+          Terms
+        </Link>
+        {" · "}
+        <Link href="/privacy" className="hover:text-[var(--cyan)]">
+          Privacy
+        </Link>
+        {" · "}
+        Estimates, not Phoenix. Not affiliated with X or xAI.
+      </p>
     </div>
   );
 }

@@ -56,6 +56,12 @@ export function SiteFooter() {
             with X or xAI. Best viewed in Chrome, 1024×768.
           </p>
           <div className="flex flex-wrap gap-4 font-mono text-[var(--cyan)]">
+            <Link href="/terms" className="hover:text-[var(--hot)]">
+              ★ terms
+            </Link>
+            <Link href="/privacy" className="hover:text-[var(--hot)]">
+              ★ privacy
+            </Link>
             <Link href="/pricing" className="hover:text-[var(--hot)]">
               ★ pricing
             </Link>
