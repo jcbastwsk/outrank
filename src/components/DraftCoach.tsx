@@ -12,7 +12,9 @@ function gradeColor(g: string) {
 }
 
 export function DraftCoach({ compact = false }: { compact?: boolean }) {
-  const [text, setText] = useState(SAMPLE_DRAFTS[2].text);
+  const [text, setText] = useState(
+    SAMPLE_DRAFTS.find((s) => s.label === "Open loop")?.text ?? SAMPLE_DRAFTS[0].text,
+  );
   const [posted, setPosted] = useState(false);
   const result: CoachResult = useMemo(() => coachDraft(scoreDraft(text)), [text]);
 
@@ -66,6 +68,9 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
             <p className="serif mt-1 text-5xl" style={{ color: gradeColor(result.grade) }}>
               {result.reach}
               <span className="ml-2 text-2xl text-[var(--muted)]">{result.grade}</span>
+            </p>
+            <p className="mt-2 text-[11px] uppercase tracking-[0.14em] text-[var(--gold)]">
+              {result.lane.label}
             </p>
           </div>
           <div className="text-right text-xs text-[var(--muted)]">

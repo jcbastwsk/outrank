@@ -83,17 +83,61 @@ export function coachDraft(score: ScoreResult): CoachResult {
     });
   }
 
-  if (f.openLoop || f.deadpan) {
+  if (score.lane.id === "operator") {
+    plays.push({
+      id: "operator-screenshot",
+      urgency: "now",
+      title: "One lesson per post, then ask a real question",
+      why: "Operator posts score on copy-link (20) and a polite reply. A numbered lesson people screenshot plus “what would you add?” is the whole machine. Don’t bury the line under a career recap.",
+      source: "ShareViaCopyLinkWeight + ReplyWeight",
+    });
+    if (!f.agreeBait && !f.hasQuestion) {
+      plays.push({
+        id: "operator-ask",
+        urgency: "now",
+        title: "Close with a specific ask, not a 🙏",
+        why: "Grateful/humbled without a question is a like farm. Likes are 0.5. Ask for a disagreement or a missing item.",
+        source: "ReplyWeight vs FavoriteWeight",
+      });
+    }
+    if (f.announce && f.hasUrl) {
+      plays.push({
+        id: "operator-link",
+        urgency: "now",
+        title: "Ship the news native, link in the reply",
+        why: "The announcement can ride follow + copy-link. The URL still trains scroll-past.",
+        source: "OpenLinkWeight + FollowAuthorWeight",
+      });
+    }
+  }
+
+  if (score.lane.id === "scene" || f.openLoop || f.deadpan) {
     plays.push({
       id: "keep-loop",
       urgency: "now",
       title: "Do not explain it in the same post",
-      why: "The replies exist because the thought is unfinished. Spell it out and you convert a reply/quote magnet into a blog sentence. Stay in the replies and answer there — each reply is weight 5.",
-      source: "ReplyWeight / QuoteWeight — open-loop prior",
+      why: "Scene posts live on reply and quote. Spell it out and it becomes a blog sentence. Answer in the replies — each one is weight 5.",
+      source: "ReplyWeight / QuoteWeight — scene prior",
     });
+    if (f.isLong) {
+      plays.push({
+        id: "scene-cut",
+        urgency: "now",
+        title: "Cut it until it feels unfinished",
+        why: "The NK-shape is one breath. A paragraph of context is Operator voice wearing a Scene costume.",
+        source: "Scene prior vs dwell-on-thread",
+      });
+    }
   }
 
-  if (!f.hasQuestion && !f.opinionated && !f.openLoop && !f.deadpan && !f.isEmpty) {
+  if (
+    !f.hasQuestion &&
+    !f.opinionated &&
+    !f.openLoop &&
+    !f.deadpan &&
+    !f.operator &&
+    !f.isEmpty
+  ) {
     plays.push({
       id: "invite-reply",
       urgency: "now",
@@ -103,7 +147,7 @@ export function coachDraft(score: ScoreResult): CoachResult {
     });
   }
 
-  if (!f.shareable && !f.openLoop && !f.deadpan && !f.isEmpty) {
+  if (!f.shareable && !f.openLoop && !f.deadpan && !f.operator && !f.isEmpty) {
     plays.push({
       id: "make-portable",
       urgency: "now",
@@ -143,7 +187,16 @@ export function coachDraft(score: ScoreResult): CoachResult {
     });
   }
 
-  if (f.isShort && !f.hasQuestion && !f.opinionated && !f.openLoop && !f.deadpan && !f.isEmpty) {
+  if (
+    f.isShort &&
+    !f.hasQuestion &&
+    !f.opinionated &&
+    !f.openLoop &&
+    !f.deadpan &&
+    !f.operator &&
+    !f.scene &&
+    !f.isEmpty
+  ) {
     plays.push({
       id: "thin",
       urgency: "next",
@@ -224,8 +277,8 @@ export function coachDraft(score: ScoreResult): CoachResult {
 
 export const SAMPLE_DRAFTS = [
   {
-    label: "Link dump",
-    text: "New blog post is up!! Check it out 🔥 https://example.com/my-startup-essay #startup #buildinpublic #ai #growth",
+    label: "Operator",
+    text: "After 10 years of building companies, here's what I wish I'd known at 25:\n\n1. Distribution is the product\n2. Hire slower than feels sane\n3. The real moat is taste\n\nWhat would you add?",
   },
   {
     label: "Open loop",
@@ -236,7 +289,7 @@ export const SAMPLE_DRAFTS = [
     text: "Consistency is the real growth hack on X.",
   },
   {
-    label: "Ranker-aware",
-    text: "The For You ranker now weights a copy-link share at 20.0 and a like at 0.5. If you want reach, write one sentence a group chat would pass around — not something people politely heart. What's the last post you actually sent to someone?",
+    label: "Link dump",
+    text: "New blog post is up!! Check it out 🔥 https://example.com/my-startup-essay #startup #buildinpublic #ai #growth",
   },
 ];

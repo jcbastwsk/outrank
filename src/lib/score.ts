@@ -29,6 +29,20 @@ export type DraftFeatures = {
   firstPerson: boolean;
   chargedTopic: boolean;
   deadpan: boolean;
+  operator: boolean;
+  scene: boolean;
+  agreeBait: boolean;
+  announce: boolean;
+  listicle: boolean;
+  lowercaseVoice: boolean;
+};
+
+export type LaneId = "operator" | "scene" | "portable" | "thin" | "spam" | "empty";
+
+export type Lane = {
+  id: LaneId;
+  label: string;
+  blurb: string;
 };
 
 export type ActionEstimate = {
@@ -47,6 +61,7 @@ export type ScoreResult = {
   rawScore: number;
   reach: number;
   grade: "F" | "D" | "C" | "B" | "A" | "S";
+  lane: Lane;
   headline: string;
   disclaimer: string;
 };
@@ -93,6 +108,19 @@ const CHARGED =
 
 const FIRST_PERSON = /\b(i|i'm|im|i've|ive|me|my)\b/i;
 
+const OPERATOR =
+  /(excited to|humbled|grateful|thrilled|as a (founder|ceo|cto|cmo|leader)|in my \d+ years|lessons? I (learned|wish)|here's what I|here is what I|building in public|the best founders|high-?agency|we just (shipped|closed|raised)|i'm hiring|im hiring|what would you add|thoughts\?|agree\?|unpopular opinion:|the real moat|leverage|10x your|as someone who|congrats to|proud to announce|i'm excited to share)/i;
+
+const AGREE_BAIT = /(thoughts\?|agree\?|what would you add|am i (wrong|crazy)|change my mind|discuss)/i;
+
+const ANNOUNCE =
+  /(announce|we (just |')?(shipped|launched|raised|closed|hired)|i'm (joining|leaving|starting)|today we)/i;
+
+const LISTICLE = /(^\s*\d+[\.\)\/]|^\s*[-–•]\s|lessons I|things I wish|a few things)/im;
+
+const SCENE_VOICE =
+  /(so over|so back|real ones know|this is not a bit|once you see it|the pattern is|they will not|they don't want|nobody is ready|it's happening|its happening|not a coincidence|wake up but)/i;
+
 export function extractFeatures(text: string): DraftFeatures {
   const t = text.trim();
   const hashtags = (t.match(/#\w+/g) ?? []).length;
@@ -108,14 +136,24 @@ export function extractFeatures(text: string): DraftFeatures {
   const hedged = HEDGED.test(t);
   const firstPerson = FIRST_PERSON.test(t);
   const chargedTopic = CHARGED.test(t);
+  const letters = (t.match(/[A-Za-z]/g) ?? []).length;
+  const lowers = (t.match(/[a-z]/g) ?? []).length;
+  const lowercaseVoice = letters >= 12 && lowers / letters >= 0.86;
+  const operator = OPERATOR.test(t) || AGREE_BAIT.test(t) || ANNOUNCE.test(t);
+  const agreeBait = AGREE_BAIT.test(t);
+  const announce = ANNOUNCE.test(t);
+  const listicle = LISTICLE.test(t);
+  const sceneVoice = SCENE_VOICE.test(t);
   const deadpan =
     !isEmpty &&
     isShort &&
     !hasUrl &&
     hashtags === 0 &&
     emoji <= 1 &&
-    (proper > 0 || chargedTopic) &&
-    (openLoop || hedged || firstPerson);
+    !operator &&
+    (proper > 0 || chargedTopic || lowercaseVoice) &&
+    (openLoop || hedged || firstPerson || sceneVoice);
+  const scene = !operator && (openLoop || deadpan || sceneVoice || (chargedTopic && (hedged || lowercaseVoice)));
 
   return {
     text: t,
@@ -146,6 +184,51 @@ export function extractFeatures(text: string): DraftFeatures {
     firstPerson,
     chargedTopic,
     deadpan,
+    operator,
+    scene,
+    agreeBait,
+    announce,
+    listicle,
+    lowercaseVoice,
+  };
+}
+
+export function classifyLane(f: DraftFeatures): Lane {
+  if (f.isEmpty) {
+    return { id: "empty", label: "Empty", blurb: "Nothing to score." };
+  }
+  if (f.hasUrl && f.hashtags >= 3) {
+    return {
+      id: "spam",
+      label: "Spam-shaped",
+      blurb: "Looks like a broadcast. Grox and humans both bounce.",
+    };
+  }
+  if (f.operator) {
+    return {
+      id: "operator",
+      label: "Operator",
+      blurb: "LinkedIn-on-X. Screenshot + “thoughts?” is the engine.",
+    };
+  }
+  if (f.scene) {
+    return {
+      id: "scene",
+      label: "Scene",
+      blurb: "Weird Twitter. Open loop. People reply to finish the thought.",
+    };
+  }
+  if (f.shareable || (f.numbers >= 2 && f.isLong)) {
+    return {
+      id: "portable",
+      label: "Portable",
+      blurb: "Built to be copy-linked into a group chat.",
+    };
+  }
+  return {
+    id: "thin",
+    label: "Thin",
+    blurb: "No hook, no loop, no lesson. Easy to scroll past.",
   };
 }
 
@@ -204,33 +287,51 @@ export function estimateProbabilities(
     p.click += 0.02;
     p.notDwelled -= 0.05;
   }
-  // Unfinished / hedged claims get replies and quotes, not copy-links.
-  // "I'm pretty sure I was lied to big time about N Korea"
-  if (f.openLoop || f.deadpan) {
+
+  // Operator = LinkedIn-on-X. Copy-link + polite reply + follow.
+  if (f.operator) {
+    p.shareViaCopyLink += 0.04;
+    p.shareViaDm += 0.012;
+    p.favorite += 0.04;
+    p.followAuthor += 0.025;
+    p.reply += f.agreeBait ? 0.06 : 0.03;
+    p.quote += 0.008;
+    p.contDwellTime += f.listicle || f.isLong ? 10 : 4;
+    p.notDwelled -= 0.06;
+  }
+  if (f.announce && f.operator) {
+    p.followAuthor += 0.02;
+    p.click += 0.03;
+  }
+
+  // Scene = weird Twitter. Reply and quote, not LinkedIn screenshots.
+  if (f.scene || f.openLoop || f.deadpan) {
     p.reply += 0.09;
-    p.quote += 0.05;
+    p.quote += 0.055;
     p.click += 0.025;
-    p.followAuthor += 0.012;
+    p.followAuthor += 0.01;
     p.notDwelled -= 0.08;
     p.dwell += 0.06;
     p.contDwellTime += 3;
   }
-  if (f.hedged && f.firstPerson) {
+  if (f.lowercaseVoice && f.scene) {
+    p.quote += 0.015;
+    p.reply += 0.015;
+  }
+  if (f.hedged && f.firstPerson && !f.operator) {
     p.reply += 0.025;
     p.quote += 0.015;
   }
-  if (f.chargedTopic) {
+  if (f.chargedTopic && !f.operator) {
     p.reply += 0.03;
     p.quote += 0.02;
-    // Tiny negative prior — the topic is spicy, not a report farm.
     p.notInterested += 0.002;
     p.muteAuthor += 0.001;
   }
-  if (f.opinionated) {
-    p.reply += 0.035;
-    p.quote += 0.028;
-    p.favorite += 0.025;
-    p.shareViaCopyLink += 0.006;
+  if (f.opinionated && !f.operator) {
+    p.reply += 0.03;
+    p.quote += 0.025;
+    p.favorite += 0.015;
   }
   if (f.shareable) {
     p.shareViaCopyLink += 0.035;
@@ -251,7 +352,15 @@ export function estimateProbabilities(
     p.click += 0.02;
   }
   // Short is only thin when it has nothing to stop on.
-  if (f.isShort && !f.hasQuestion && !f.openLoop && !f.deadpan && !f.opinionated) {
+  if (
+    f.isShort &&
+    !f.hasQuestion &&
+    !f.openLoop &&
+    !f.deadpan &&
+    !f.opinionated &&
+    !f.operator &&
+    !f.scene
+  ) {
     p.notDwelled += 0.08;
     p.dwell -= 0.04;
     p.contDwellTime -= 2;
@@ -323,6 +432,7 @@ export function estimateProbabilities(
 
 export function scoreDraft(text: string): ScoreResult {
   const features = extractFeatures(text);
+  const lane = classifyLane(features);
   const probs = estimateProbabilities(features);
 
   const actions: ActionEstimate[] = ACTION_META.map(({ id, label }) => {
@@ -349,16 +459,25 @@ export function scoreDraft(text: string): ScoreResult {
     reach >= 88 ? "S" : reach >= 75 ? "A" : reach >= 60 ? "B" : reach >= 45 ? "C" : reach >= 30 ? "D" : "F";
 
   const top = actions.find((a) => a.kind === "positive" && a.contribution > 0);
-  const headline = features.isEmpty
-    ? "Write something. Phoenix cannot rank a blank post."
-    : features.openLoop || features.deadpan
-      ? `Open loop — people reply to finish the thought. Scoring on ${(top?.label ?? "reply").toLowerCase()} (${top ? `${top.weight} × p≈${(top.probability * 100).toFixed(1)}%` : "replies"}).`
-      : top
-        ? `This draft is mostly scoring on ${top.label.toLowerCase()} (${top.weight} × p≈${(top.probability * 100).toFixed(1)}%).`
-        : "This draft is not exciting any positive head.";
+  const headBit = top
+    ? `${top.label.toLowerCase()} (${top.weight} × p≈${(top.probability * 100).toFixed(1)}%)`
+    : "nothing";
+  const headline =
+    lane.id === "empty"
+      ? "Write something. Phoenix cannot rank a blank post."
+      : lane.id === "scene"
+        ? `Scene post. ${lane.blurb} Scoring on ${headBit}.`
+        : lane.id === "operator"
+          ? `Operator post. ${lane.blurb} Scoring on ${headBit}.`
+          : lane.id === "spam"
+            ? `Spam-shaped. ${lane.blurb}`
+            : lane.id === "thin"
+              ? `Thin. ${lane.blurb}`
+              : `Portable. ${lane.blurb} Scoring on ${headBit}.`;
 
   return {
     features,
+    lane,
     actions,
     rawScore,
     reach,
