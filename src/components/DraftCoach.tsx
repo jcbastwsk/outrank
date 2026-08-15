@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { coachDraft, SAMPLE_DRAFTS, type CoachResult } from "../lib/coach";
 import { scoreDraft } from "../lib/score";
+import { VIBE_KEY, type VibeProfile } from "../lib/vibe";
 
 function gradeColor(g: string) {
   if (g === "S" || g === "A") return "var(--good)";
@@ -16,7 +17,20 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
     SAMPLE_DRAFTS.find((s) => s.label === "Open loop")?.text ?? SAMPLE_DRAFTS[0].text,
   );
   const [posted, setPosted] = useState(false);
-  const result: CoachResult = useMemo(() => coachDraft(scoreDraft(text)), [text]);
+  const [vibe, setVibe] = useState<VibeProfile | null>(null);
+  useEffect(() => {
+    const raw = localStorage.getItem(VIBE_KEY);
+    if (!raw) return;
+    try {
+      setVibe(JSON.parse(raw) as VibeProfile);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const result: CoachResult = useMemo(
+    () => coachDraft(scoreDraft(text), vibe),
+    [text, vibe],
+  );
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">

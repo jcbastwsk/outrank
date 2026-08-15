@@ -4,6 +4,7 @@ import {
   effectiveMutualReplyWeight,
   secondPostMultiplier,
 } from "./score";
+import type { VibeProfile } from "./vibe";
 
 export type Play = {
   id: string;
@@ -77,7 +78,7 @@ export function todaysPlays(): Play[] {
   ];
 }
 
-export function coachDraft(score: ScoreResult): CoachResult {
+export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): CoachResult {
   const f = score.features;
   const plays: Play[] = [];
 
@@ -168,12 +169,32 @@ export function coachDraft(score: ScoreResult): CoachResult {
     });
   }
 
+  const inMiladyRoom = vibe?.tribe === "milady";
+  const inOperatorRoom = vibe?.posture === "operator" && (vibe.confidence ?? 0) >= 0.5;
+  const offVoice =
+    Boolean(vibe && vibe.samples >= 3 && vibe.confidence >= 0.5) &&
+    ((inMiladyRoom && score.lane.id === "operator") ||
+      (inOperatorRoom && (score.lane.id === "scene" || f.tribe === "milady") && f.costume) ||
+      (vibe?.posture === "reel" && score.lane.id === "operator" && !f.aiReel));
+
+  if (offVoice && vibe) {
+    plays.push({
+      id: "off-voice",
+      urgency: "now",
+      title: "This isn't your room",
+      why: `Your last ${vibe.samples} posts read as ${vibe.aesthetic}. This draft is ${score.lane.label}. Phoenix already has a viewer-side model of you. Costume-switching looks like a different account.`,
+      source: "Per-viewer Phoenix + vibe profile",
+    });
+  }
+
   if (f.tribe === "milady") {
     plays.push({
       id: "milady-room",
       urgency: "now",
       title: "This only lands in the Remilia graph",
-      why: "Milady is a room, not a growth tactic. Mutuals who already live there will reply. A cold For You viewer sees a private joke (OON ×0.75). Don't explain Remilia. Don't append gm milady to a fundraise.",
+      why: inMiladyRoom
+        ? "You're already in the room. Don't explain Remilia. Don't suddenly write a 10-lessons thread. One breath, then live in the replies."
+        : "Milady is a room, not a growth tactic. Mutuals who already live there will reply. A cold For You viewer sees a private joke (OON ×0.75). Don't explain Remilia. Don't append gm milady to a fundraise.",
       source: "Per-viewer Phoenix + OonWeightFactor",
     });
     if (f.costume) {

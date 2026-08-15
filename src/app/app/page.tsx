@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DraftCoach } from "../../components/DraftCoach";
+import { VibeDesk } from "../../components/VibeDesk";
 import { todaysPlays } from "../../lib/coach";
 import { ALGO_CHANGELOG } from "../../lib/changelog";
 import { ALGO_SOURCE, ACTION_WEIGHTS, BOOSTS, likeEquivalent } from "../../lib/weights";
@@ -66,6 +67,11 @@ export default async function CommandPage({
             </li>
           ))}
         </ul>
+      </section>
+
+      <section>
+        <h2 className="mb-4 text-lg">Your room</h2>
+        <VibeDesk compact />
       </section>
 
       <section>
