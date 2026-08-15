@@ -37,11 +37,13 @@ export type DraftFeatures = {
   lowercaseVoice: boolean;
   cursed: boolean;
   hateRisk: boolean;
+  aiReel: boolean;
 };
 
 export type LaneId =
   | "operator"
   | "scene"
+  | "reel"
   | "cursed"
   | "volatile"
   | "portable"
@@ -128,6 +130,15 @@ const ANNOUNCE =
 
 const LISTICLE = /(^\s*\d+[\.\)\/]|^\s*[-–•]\s|lessons I|things I wish|a few things)/im;
 
+const AI_TOOL =
+  /(midjourney|runway|kling|sora|veo\b|luma|pika|comfyui|comfy ui|stable diffusion|\bflux\b|higgsfield|hailuo|minimax|hunyuan|wan\b|seedance|dream machine|elevenlabs)/i;
+
+const CINEMA_LEX =
+  /(cinematic|short film|ai film|ai cinema|ai art|teaser|trailer|\bstill\b|keyframe|color grade|anamorphic|no crew|no camera|generations?|the prompt|ai slop|this is ai|made with ai)/i;
+
+const WORKFLOW_BAIT =
+  /(comment \w+|workflow in (the )?thread|prompt in (the )?thread|save this|which (one|frame|still)|drop a 🔥)/i;
+
 const SCENE_VOICE =
   /(so over|so back|real ones know|this is not a bit|once you see it|the pattern is|they will not|they don't want|nobody is ready|it's happening|its happening|not a coincidence|wake up but)/i;
 
@@ -191,7 +202,13 @@ export function extractFeatures(text: string): DraftFeatures {
     !operator &&
     (proper > 0 || chargedTopic || lowercaseVoice) &&
     (openLoop || hedged || firstPerson || sceneVoice);
-  const cursed = !operator && !isEmpty && looksBrokenSyntax(t);
+  const aiCraft = AI_TOOL.test(t) || CINEMA_LEX.test(t);
+  const workflowBait = WORKFLOW_BAIT.test(t);
+  const aiReel =
+    !isEmpty &&
+    (aiCraft || workflowBait) &&
+    (aiCraft || operator || announce || agreeBait || listicle || workflowBait);
+  const cursed = !operator && !aiReel && !isEmpty && looksBrokenSyntax(t);
   const hateRisk = hasHateRisk(t);
   const scene =
     !operator &&
@@ -235,6 +252,7 @@ export function extractFeatures(text: string): DraftFeatures {
     lowercaseVoice,
     cursed,
     hateRisk,
+    aiReel,
   };
 }
 
@@ -261,6 +279,13 @@ export function classifyLane(f: DraftFeatures): Lane {
       id: "cursed",
       label: "Cursed",
       blurb: "Broken on purpose. People quote the wreck. Don't fix the grammar.",
+    };
+  }
+  if (f.aiReel) {
+    return {
+      id: "reel",
+      label: "Reel",
+      blurb: "AI art/cinema. The LinkedIn skeleton is native here. Still + number + thread.",
     };
   }
   if (f.operator) {
@@ -348,7 +373,21 @@ export function estimateProbabilities(
   }
 
   // Operator = LinkedIn-on-X. Copy-link + polite reply + follow.
-  if (f.operator) {
+  // Reel = AI art/cinema LinkedIn bait. The room wants the slop-shaped post.
+  if (f.aiReel) {
+    p.shareViaCopyLink += 0.045;
+    p.shareViaDm += 0.015;
+    p.reply += 0.055;
+    p.quote += 0.02;
+    p.followAuthor += 0.03;
+    p.favorite += 0.03;
+    p.click += 0.03;
+    p.photoExpand += 0.04;
+    p.notDwelled -= 0.07;
+    p.contDwellTime += 6;
+  }
+
+  if (f.operator && !f.aiReel) {
     p.shareViaCopyLink += 0.04;
     p.shareViaDm += 0.012;
     p.favorite += 0.04;
@@ -358,7 +397,7 @@ export function estimateProbabilities(
     p.contDwellTime += f.listicle || f.isLong ? 10 : 4;
     p.notDwelled -= 0.06;
   }
-  if (f.announce && f.operator) {
+  if (f.announce && f.operator && !f.aiReel) {
     p.followAuthor += 0.02;
     p.click += 0.03;
   }
@@ -441,7 +480,8 @@ export function estimateProbabilities(
     !f.operator &&
     !f.scene &&
     !f.cursed &&
-    !f.hateRisk
+    !f.hateRisk &&
+    !f.aiReel
   ) {
     p.notDwelled += 0.08;
     p.dwell -= 0.04;
@@ -548,6 +588,7 @@ export function scoreDraft(text: string): ScoreResult {
     empty: "Write something. Phoenix cannot rank a blank post.",
     scene: `Scene post. ${lane.blurb} Scoring on ${headBit}.`,
     operator: `Operator post. ${lane.blurb} Scoring on ${headBit}.`,
+    reel: `Reel. ${lane.blurb} Scoring on ${headBit}.`,
     cursed: `Cursed. ${lane.blurb} Scoring on ${headBit}.`,
     volatile: `Volatile. ${lane.blurb} Top head ${headBit}.`,
     spam: `Spam-shaped. ${lane.blurb}`,

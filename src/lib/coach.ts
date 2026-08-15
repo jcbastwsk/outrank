@@ -101,6 +101,25 @@ export function coachDraft(score: ScoreResult): CoachResult {
     });
   }
 
+  if (score.lane.id === "reel" || f.aiReel) {
+    plays.push({
+      id: "reel-bait",
+      urgency: "now",
+      title: "Lean into the LinkedIn skeleton",
+      why: "In the AI art/cinema room the operator template is native: a still, a number (seconds, generations, dollars), and “workflow in the thread.” Don’t hide the bait. Don’t dump the prompt in the same post — that’s the reply engine.",
+      source: "ShareViaCopyLinkWeight + ReplyWeight + FollowAuthorWeight",
+    });
+    if (f.hasUrl) {
+      plays.push({
+        id: "reel-link",
+        urgency: "now",
+        title: "Native still first, YouTube in the reply",
+        why: "The feed pays for on-platform dwell and photo-expand. The Vimeo/YT link is a reply, not the post.",
+        source: "OpenLinkWeight vs PhotoExpand / dwell",
+      });
+    }
+  }
+
   if (score.lane.id === "operator") {
     plays.push({
       id: "operator-screenshot",
@@ -181,6 +200,7 @@ export function coachDraft(score: ScoreResult): CoachResult {
     !f.openLoop &&
     !f.deadpan &&
     !f.operator &&
+    !f.aiReel &&
     !f.cursed &&
     !f.hateRisk &&
     !f.isEmpty
@@ -199,6 +219,7 @@ export function coachDraft(score: ScoreResult): CoachResult {
     !f.openLoop &&
     !f.deadpan &&
     !f.operator &&
+    !f.aiReel &&
     !f.cursed &&
     !f.hateRisk &&
     !f.isEmpty
@@ -250,6 +271,7 @@ export function coachDraft(score: ScoreResult): CoachResult {
     !f.deadpan &&
     !f.operator &&
     !f.scene &&
+    !f.aiReel &&
     !f.cursed &&
     !f.hateRisk &&
     !f.isEmpty
@@ -337,6 +359,10 @@ export const SAMPLE_DRAFTS = [
   {
     label: "Operator",
     text: "After 10 years of building companies, here's what I wish I'd known at 25:\n\n1. Distribution is the product\n2. Hire slower than feels sane\n3. The real moat is taste\n\nWhat would you add?",
+  },
+  {
+    label: "Reel",
+    text: "Just dropped a 12 second film. No crew. No camera. 47 generations in Kling.\n\nWorkflow in the thread — comment FILM and I'll send it.",
   },
   {
     label: "Open loop",
