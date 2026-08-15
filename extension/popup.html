@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        margin: 0;
+        width: 300px;
+        background: #09090b;
+        color: #f4efe4;
+        font: 13px/1.45 ui-sans-serif, system-ui, sans-serif;
+        padding: 14px;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 15px;
+      }
+      .ok { color: #3dd68c; }
+      .bad { color: #ff5d5d; }
+      .muted { color: #9a958a; font-size: 12px; }
+      label {
+        display: block;
+        margin-top: 12px;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #9a958a;
+      }
+      input {
+        width: 100%;
+        margin-top: 6px;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid rgba(245, 185, 66, 0.25);
+        background: #111;
+        color: inherit;
+        box-sizing: border-box;
+      }
+      button, a.btn {
+        display: block;
+        margin-top: 8px;
+        width: 100%;
+        border: 0;
+        border-radius: 999px;
+        padding: 8px;
+        background: linear-gradient(180deg, #f7c65a, #e0a21a);
+        color: #1a1304;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        box-sizing: border-box;
+        cursor: pointer;
+      }
+      a.ghost {
+        background: transparent;
+        border: 1px solid rgba(245, 185, 66, 0.3);
+        color: #f4efe4;
+      }
+      #status { margin-top: 8px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>Outrank</h1>
+    <div id="status" class="muted">Checking local app…</div>
+    <label>API</label>
+    <input id="api" value="http://localhost:3000" />
+    <button id="save">Save & test</button>
+    <a class="btn" id="compose" href="https://x.com/compose/post" target="_blank">Open X compose</a>
+    <a class="btn ghost" id="dash" href="http://localhost:3000/app" target="_blank">Open dashboard</a>
+    <p class="muted">
+      On Chrome OS, if localhost fails, try
+      <span style="color:#f5b942">http://penguin.linux.test:3000</span>
+    </p>
+    <script src="connect.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
