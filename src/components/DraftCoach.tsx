@@ -20,6 +20,17 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+      {result.accountRisk && (
+        <div
+          className="rounded-2xl border px-4 py-3 text-sm leading-6 lg:col-span-2"
+          style={{ borderColor: "var(--bad)", background: "rgba(255,93,93,0.08)", color: "var(--bad)" }}
+        >
+          <strong>Do not nuke the account.</strong> Replies can print. Reports
+          are −234 in the published ranker. Labels from this lane can drop you
+          out of For You for people who don’t follow you. We will not help you
+          tune it.
+        </div>
+      )}
       <div className="card p-5">
         <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
           <span>Draft</span>

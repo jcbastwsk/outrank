@@ -17,7 +17,18 @@ export type CoachResult = ScoreResult & {
   plays: Play[];
   firstHour: Play[];
   today: Play[];
+  accountRisk: boolean;
 };
+
+export function isAccountRisk(score: ScoreResult): boolean {
+  const report = score.actions.find((a) => a.id === "report")?.contribution ?? 0;
+  return (
+    score.features.hateRisk ||
+    score.features.rageBait ||
+    score.lane.id === "volatile" ||
+    report < -0.4
+  );
+}
 
 export function todaysPlays(): Play[] {
   return [
@@ -128,13 +139,13 @@ export function coachDraft(score: ScoreResult): CoachResult {
     });
   }
 
-  if (score.lane.id === "volatile" || f.hateRisk) {
+  if (score.lane.id === "volatile" || f.hateRisk || f.rageBait) {
     plays.push({
-      id: "volatile-no",
+      id: "dont-nuke",
       urgency: "never",
-      title: "We will not help you tune this",
-      why: `Slur-bait can print replies. It also prints reports. ReportWeight is ${ACTION_WEIGHTS.report}. One report wipes ~${Math.abs(likeEquivalent(ACTION_WEIGHTS.report)).toFixed(0)} likes. The posts that “fly” are the ones that didn't get reported — the published formula cannot tell you which. Stay out of this lane on purpose.`,
-      source: "ReportWeight / MuteAuthorWeight",
+      title: "Do not nuke the account",
+      why: `This can print replies and still kill distribution. ReportWeight is ${ACTION_WEIGHTS.report} (~${Math.abs(likeEquivalent(ACTION_WEIGHTS.report)).toFixed(0)} likes each). Mute is ${ACTION_WEIGHTS.muteAuthor}. Those pile into Agatha / safety labels / visibility-filtering. A drop label hides you from people who don't follow you. We will not help you tune this.`,
+      source: "ReportWeight + MuteAuthorWeight + visibility-filtering",
     });
   }
 
@@ -318,6 +329,7 @@ export function coachDraft(score: ScoreResult): CoachResult {
     plays,
     firstHour,
     today: todaysPlays(),
+    accountRisk: isAccountRisk(score),
   };
 }
 
