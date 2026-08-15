@@ -59,7 +59,8 @@ export default function PrivacyPage() {
       <p>
         <strong>On your machine only.</strong> Vibe profile, the @ you typed,
         curator copies, and a joke hit counter live in{" "}
-        <span className="mono">localStorage</span>. We do not fetch your X
+        <span className="mono">localStorage</span>. Avatar files are scored in
+        the browser canvas and are not uploaded. We do not fetch your X
         profile. Clear site data and they are gone. We cannot read your
         localStorage from another computer.
       </p>
