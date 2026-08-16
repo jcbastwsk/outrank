@@ -15,9 +15,7 @@ function gradeColor(g: string) {
 }
 
 export function DraftCoach({ compact = false }: { compact?: boolean }) {
-  const [text, setText] = useState(
-    SAMPLE_DRAFTS.find((s) => s.label === "Open loop")?.text ?? SAMPLE_DRAFTS[0].text,
-  );
+  const [text, setText] = useState("");
   const [posted, setPosted] = useState(false);
   const [vibe, setVibe] = useState<VibeProfile | null>(null);
   useEffect(() => {
@@ -64,7 +62,7 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-      {result.accountRisk && (
+      {result.accountRisk && !result.features.isEmpty && (
         <div
           className="panel px-4 py-3 text-sm leading-6 lg:col-span-2"
           style={{ borderColor: "var(--bad)", background: "rgba(255,93,93,0.08)", color: "var(--bad)" }}
@@ -79,13 +77,9 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
         <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
           <span>Draft</span>
           <span className="mono">
-            {FORMAT_META[result.format].label}
-            {result.features.wall ? " · wall" : ""}
-            {" · "}
-            {result.features.chars}
-            {result.features.paragraphs > 1
-              ? ` · ${result.features.paragraphs}¶`
-              : ""}
+            {result.features.isEmpty
+              ? "—"
+              : `${FORMAT_META[result.format].label}${result.features.wall ? " · wall" : ""} · ${result.features.chars}${result.features.paragraphs > 1 ? ` · ${result.features.paragraphs}¶` : ""}`}
           </span>
         </div>
         <textarea
@@ -95,8 +89,8 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
             setPosted(false);
           }}
           rows={compact ? 7 : 10}
-          className="field resize-y p-4 text-[15px] leading-7"
-          placeholder="Paste the post you're about to publish…"
+          className="field resize-y p-4 text-[20px] leading-7 placeholder:text-[#71767b] placeholder:opacity-100"
+          placeholder="What's happening?"
         />
         <div className="mt-3 flex flex-wrap gap-2">
           {SAMPLE_DRAFTS.map((s) => (
@@ -123,6 +117,9 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
       </div>
 
       <div className="card p-5">
+        {result.features.isEmpty ? (
+          <p className="serif text-2xl leading-8 text-[#71767b]">What&apos;s happening?</p>
+        ) : (
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
@@ -147,10 +144,13 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
             <div>Σ wᵢ · P̂ᵢ</div>
           </div>
         </div>
+        )}
+        {!result.features.isEmpty && (
         <p className="mt-4 text-sm leading-6 text-[var(--ink)]/90">{result.headline}</p>
+        )}
 
         <div className="mt-5 space-y-2">
-          {result.actions
+          {!result.features.isEmpty && result.actions
             .filter((a) => Math.abs(a.contribution) > 0.004)
             .slice(0, compact ? 5 : 8)
             .map((a) => (
@@ -187,8 +187,15 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
 
       <div className="card p-5 lg:col-span-2">
         <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
-          {posted ? "First-hour playbook" : "Do this before you post"}
+          {result.features.isEmpty
+            ? "Waiting"
+            : posted
+              ? "First-hour playbook"
+              : "Do this before you post"}
         </p>
+        {result.features.isEmpty ? (
+          <p className="mt-4 serif text-xl text-[#71767b]">What&apos;s happening?</p>
+        ) : (
         <ul className="mt-4 grid gap-3 md:grid-cols-2">
           {(posted ? result.firstHour : result.plays).map((play) => (
             <li key={play.id} className="panel p-4">
@@ -201,7 +208,10 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
             </li>
           ))}
         </ul>
+        )}
+        {!result.features.isEmpty && (
         <p className="mt-4 text-xs leading-5 text-[var(--muted)]">{result.disclaimer}</p>
+        )}
       </div>
     </div>
   );
