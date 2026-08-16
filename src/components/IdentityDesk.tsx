@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { analyzeAvatar, type AvatarResult } from "../lib/avatar";
+import { noAutofill } from "../lib/autofill";
 import { HANDLE_KEY, saveHandle, type HandleKind } from "../lib/handle";
 import {
   emptyIdentity,
@@ -107,6 +108,7 @@ export function IdentityDesk() {
         </p>
         <Field label="Display name">
           <input
+            {...noAutofill}
             className="field px-3 py-2 text-sm"
             value={id.name}
             maxLength={50}
@@ -116,6 +118,7 @@ export function IdentityDesk() {
         </Field>
         <Field label="@">
           <input
+            {...noAutofill}
             className="field px-3 py-2 text-sm"
             value={id.handle}
             placeholder="@you"
@@ -127,6 +130,7 @@ export function IdentityDesk() {
               <button
                 key={o.id}
                 type="button"
+                suppressHydrationWarning
                 className="chip px-2 py-1 text-[11px]"
                 data-active={
                   (id.handleOverride ?? shop.handle.kind) === o.id
@@ -145,6 +149,7 @@ export function IdentityDesk() {
         </Field>
         <Field label={`Bio · ${id.bio.length}/160`}>
           <textarea
+            {...noAutofill}
             className="field min-h-24 p-3 text-sm leading-6"
             value={id.bio}
             maxLength={200}
@@ -155,6 +160,7 @@ export function IdentityDesk() {
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Location">
             <input
+              {...noAutofill}
               className="field px-3 py-2 text-sm"
               value={id.location}
               placeholder="optional"
@@ -163,6 +169,7 @@ export function IdentityDesk() {
           </Field>
           <Field label="Website">
             <input
+              {...noAutofill}
               className="field px-3 py-2 text-sm"
               value={id.website}
               placeholder="https://"
@@ -183,6 +190,7 @@ export function IdentityDesk() {
           />
           <button
             type="button"
+            suppressHydrationWarning
             className="btn-ghost px-3 py-2 text-sm"
             onClick={() => fileRef.current?.click()}
           >
@@ -191,6 +199,7 @@ export function IdentityDesk() {
         </Field>
         <Field label="Pinned post">
           <textarea
+            {...noAutofill}
             className="field min-h-28 p-3 text-sm leading-6"
             value={id.pinned}
             placeholder="The one free original a cold visitor gets."

@@ -29,6 +29,8 @@ export function HoodDrop() {
           </button>
         </div>
         <textarea
+          autoComplete="off"
+          suppressHydrationWarning
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
           rows={18}

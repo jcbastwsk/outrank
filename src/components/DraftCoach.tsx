@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { coachDraft, SAMPLE_DRAFTS, type CoachResult } from "../lib/coach";
 import { FORMAT_META, scoreDraft } from "../lib/score";
+import { noAutofill } from "../lib/autofill";
 import { classifyHandle, HANDLE_KEY } from "../lib/handle";
 import { loadIdentity, workshopIdentity } from "../lib/identity";
 import { VIBE_KEY, type VibeProfile } from "../lib/vibe";
@@ -83,6 +84,7 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
           </span>
         </div>
         <textarea
+          {...noAutofill}
           value={text}
           onChange={(e) => {
             setText(e.target.value);
@@ -97,6 +99,7 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
             <button
               key={s.label}
               type="button"
+              suppressHydrationWarning
               onClick={() => {
                 setText(s.text);
                 setPosted(false);
@@ -108,6 +111,7 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
           ))}
           <button
             type="button"
+            suppressHydrationWarning
             onClick={() => setPosted(true)}
             className="chip ml-auto px-3 py-1 text-xs text-[var(--gold)]"
           >

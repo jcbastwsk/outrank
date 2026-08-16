@@ -7,6 +7,7 @@ import {
   saveHandle,
   type HandleRead,
 } from "../lib/handle";
+import { noAutofill } from "../lib/autofill";
 import { emptyIdentity, loadIdentity, saveIdentity } from "../lib/identity";
 
 export function HandleChip({ compact = false }: { compact?: boolean }) {
@@ -38,6 +39,7 @@ export function HandleChip({ compact = false }: { compact?: boolean }) {
         </span>
       )}
       <input
+        {...noAutofill}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onBlur={(e) => commit(e.target.value)}

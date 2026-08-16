@@ -45,6 +45,10 @@ export function VibeDesk({ compact = false }: { compact?: boolean }) {
           Your last posts
         </p>
         <textarea
+          {...{
+            autoComplete: "off" as const,
+            suppressHydrationWarning: true,
+          }}
           value={blob}
           onChange={(e) => setBlob(e.target.value)}
           rows={compact ? 5 : 10}
