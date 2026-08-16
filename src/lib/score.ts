@@ -482,7 +482,9 @@ export function voiceMix(f: DraftFeatures): VoiceShare[] {
   if (f.aiReel) w.reel = (w.reel ?? 0) + 0.5;
   if (f.tribe === "milady") w.milady = (w.milady ?? 0) + 0.55;
   if (f.tribe === "queer" || f.reclaimed) w.queer = (w.queer ?? 0) + 0.45;
-  if (f.shareable) w.portable = (w.portable ?? 0) + 0.3;
+  if (f.shareable || f.format === "article" || (f.format === "long" && !f.wall)) {
+    w.portable = (w.portable ?? 0) + 0.3;
+  }
   if (f.costume && f.operator) w.operator = (w.operator ?? 0) + 0.15;
   const sum = Object.values(w).reduce((a, b) => a + b, 0);
   if (sum === 0) return [{ id: "thin", label: "Thin", weight: 1 }];
