@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Wordmark } from "./Brand";
-import { HitCounter, Ticker } from "./Web1";
+import { Ticker } from "./Web1";
 import { ALGO_SOURCE } from "../lib/weights";
 
 export function SiteHeader() {
@@ -32,41 +32,44 @@ export function SiteHeader() {
         </div>
       </div>
       <Ticker />
+      <div className="corp-bar">
+        <span>Coaching Systems</span>
+        <span className="corp-bar-rule" aria-hidden="true" />
+        <span>Public ranker · snapshot {ALGO_SOURCE.snapshotAt.slice(0, 10)}</span>
+      </div>
     </header>
   );
 }
 
 export function SiteFooter() {
   return (
-    <footer className="border-t-[3px] border-[var(--hot)] bg-[#0a0018] py-8 text-sm text-[var(--muted)]">
+    <footer className="site-footer">
       <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5">
         <hr className="sparkle-hr" />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="mono text-[15px] text-[var(--cyan)]">
+          <p className="mono text-[14px] text-[var(--cyan)]">
             <span className="live-dot" />
             watching {ALGO_SOURCE.repo}
           </p>
-          <p className="flex flex-wrap items-center gap-2">
-            you are visitor <HitCounter />
-          </p>
+          <p className="mono text-[13px]">Chrome · 1024×768</p>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            Outrank is a personal homepage for the For You ranker. Not affiliated
-            with X or xAI. Best viewed in Chrome, 1024×768.
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <p className="max-w-xl leading-6">
+            Outrank builds coaching systems against the published For You
+            ranker. Estimates, not Phoenix. Not affiliated with X or xAI.
           </p>
-          <div className="flex flex-wrap gap-4 font-mono text-[var(--cyan)]">
+          <div className="flex flex-wrap gap-4 font-mono text-[13px] text-[var(--cyan)]">
             <Link href="/terms" className="hover:text-[var(--hot)]">
-              ★ terms
+              Terms
             </Link>
             <Link href="/privacy" className="hover:text-[var(--hot)]">
-              ★ privacy
+              Privacy
             </Link>
             <Link href="/pricing" className="hover:text-[var(--hot)]">
-              ★ pricing
+              Pricing
             </Link>
             <Link href="/app/radar" className="hover:text-[var(--hot)]">
-              ★ radar
+              Radar
             </Link>
             <a
               href="https://github.com/xai-org/x-algorithm"
@@ -74,7 +77,7 @@ export function SiteFooter() {
               rel="noreferrer"
               className="hover:text-[var(--hot)]"
             >
-              ★ source algo
+              x-algorithm
             </a>
           </div>
         </div>

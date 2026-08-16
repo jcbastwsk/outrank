@@ -26,7 +26,7 @@ export default function Home() {
               <span className="live-dot" />
               watching {ALGO_SOURCE.repo} · snapshot {ALGO_SOURCE.snapshotAt.slice(0, 10)}
             </p>
-            <h1 className="serif mt-4 text-5xl leading-[1.05] tracking-tight md:text-7xl">
+            <h1 className="serif mt-5 text-5xl leading-[1.05] tracking-tight md:text-7xl">
               The algorithm is public.
               <span className="gold-text"> We watch it for you.</span>
             </h1>
@@ -61,15 +61,29 @@ export default function Home() {
               </div>
             </dl>
           </div>
-          <div className="scanline card overflow-hidden">
-            <Image
-              src="/hero2.jpg"
-              alt="A CRT on a particle-board desk, starfield tapestry, lava lamp"
-              width={1600}
-              height={900}
-              className="h-full w-full object-cover"
-              priority
-            />
+          <div className="htm-window">
+            <div className="htm-title">
+              <span>Outrank Coach</span>
+              <span className="htm-btns" aria-hidden="true">
+                <i>_</i>
+                <i>□</i>
+                <i>×</i>
+              </span>
+            </div>
+            <div className="scanline overflow-hidden">
+              <Image
+                src="/hero2.jpg"
+                alt="A CRT on a particle-board desk, starfield tapestry, lava lamp"
+                width={1600}
+                height={900}
+                className="h-full w-full object-cover"
+                priority
+              />
+            </div>
+            <p className="htm-status mono">
+              snapshot {ALGO_SOURCE.snapshotAt.slice(0, 10)} · not affiliated with X
+              or xAI
+            </p>
           </div>
         </section>
 
@@ -79,7 +93,7 @@ export default function Home() {
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="mono text-[15px] text-[var(--gold)]">
-                ★ live published weights ★
+                Production weights
               </p>
               <h2 className="serif mt-2 text-4xl">Not vibes. The actual heads.</h2>
             </div>
