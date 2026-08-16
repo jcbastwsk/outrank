@@ -110,12 +110,31 @@ export type ActionEstimate = {
   kind: "positive" | "negative";
 };
 
+export type Grade = "F" | "D" | "C" | "B" | "A" | "S";
+
+export type AudienceRead = {
+  id: "graph" | "cold";
+  label: string;
+  reach: number;
+  grade: Grade;
+  rawScore: number;
+};
+
+export type VoiceShare = {
+  id: string;
+  label: string;
+  weight: number;
+};
+
 export type ScoreResult = {
   features: DraftFeatures;
   actions: ActionEstimate[];
   rawScore: number;
   reach: number;
-  grade: "F" | "D" | "C" | "B" | "A" | "S";
+  grade: Grade;
+  graph: AudienceRead;
+  cold: AudienceRead;
+  mix: VoiceShare[];
   lane: Lane;
   tribe: TribeId;
   format: FormatId;
@@ -433,6 +452,49 @@ function clamp01(n: number) {
   return Math.max(0, Math.min(1, n));
 }
 
+export function gradeFromReach(reach: number): Grade {
+  return reach >= 88 ? "S" : reach >= 75 ? "A" : reach >= 60 ? "B" : reach >= 45 ? "C" : reach >= 30 ? "D" : "F";
+}
+
+export function reachFromRaw(raw: number) {
+  return Math.round(clamp01((raw + 0.8) / 3.4) * 100);
+}
+
+const VOICE_LABEL: Record<string, string> = {
+  operator: "Operator",
+  scene: "Scene",
+  cursed: "Cursed",
+  reel: "Reel",
+  milady: "Milady",
+  queer: "Queer room",
+  portable: "Portable",
+  volatile: "Volatile",
+  thin: "Thin",
+};
+
+export function voiceMix(f: DraftFeatures): VoiceShare[] {
+  const w: Record<string, number> = {};
+  if (f.isEmpty) return [];
+  if (f.hateRisk) w.volatile = 0.8;
+  if (f.operator) w.operator = (w.operator ?? 0) + 0.45;
+  if (f.scene || f.openLoop || f.deadpan) w.scene = (w.scene ?? 0) + 0.4;
+  if (f.cursed) w.cursed = (w.cursed ?? 0) + 0.55;
+  if (f.aiReel) w.reel = (w.reel ?? 0) + 0.5;
+  if (f.tribe === "milady") w.milady = (w.milady ?? 0) + 0.55;
+  if (f.tribe === "queer" || f.reclaimed) w.queer = (w.queer ?? 0) + 0.45;
+  if (f.shareable) w.portable = (w.portable ?? 0) + 0.3;
+  if (f.costume && f.operator) w.operator = (w.operator ?? 0) + 0.15;
+  const sum = Object.values(w).reduce((a, b) => a + b, 0);
+  if (sum === 0) return [{ id: "thin", label: "Thin", weight: 1 }];
+  return Object.entries(w)
+    .map(([id, v]) => ({
+      id,
+      label: VOICE_LABEL[id] ?? id,
+      weight: v / sum,
+    }))
+    .sort((a, b) => b.weight - a.weight);
+}
+
 /**
  * Heuristic stand-in for Phoenix P(action | viewer, post).
  * Phoenix itself is a Grok transformer over the viewer's engagement history.
@@ -737,12 +799,38 @@ export function scoreDraft(text: string): ScoreResult {
   }).sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
 
   const rawScore = actions.reduce((s, a) => s + a.contribution, 0);
+  const graphRaw = rawScore;
+  let coldRaw = actions.reduce((s, a) => {
+    if (a.kind === "positive") return s + a.contribution * BOOSTS.oonWeightFactor;
+    return s + a.contribution;
+  }, 0);
+  if (features.scene || features.reclaimed || features.tribe !== "none") {
+    coldRaw -= 0.32;
+  }
+  if (features.costume) coldRaw -= 0.22;
+  if (features.operator && !features.scene && features.tribe === "none") {
+    coldRaw += 0.06;
+  }
 
-  // Map typical drafts (~ -0.5 .. 2.8) onto a 0–100 reach index.
-  const reach = Math.round(clamp01((rawScore + 0.8) / 3.4) * 100);
-
-  const grade: ScoreResult["grade"] =
-    reach >= 88 ? "S" : reach >= 75 ? "A" : reach >= 60 ? "B" : reach >= 45 ? "C" : reach >= 30 ? "D" : "F";
+  const graphReach = reachFromRaw(graphRaw);
+  const coldReach = reachFromRaw(coldRaw);
+  const reach = graphReach;
+  const grade = gradeFromReach(reach);
+  const mix = voiceMix(features);
+  const graph: AudienceRead = {
+    id: "graph",
+    label: "Mutuals",
+    reach: graphReach,
+    grade: gradeFromReach(graphReach),
+    rawScore: graphRaw,
+  };
+  const cold: AudienceRead = {
+    id: "cold",
+    label: "Cold For You",
+    reach: coldReach,
+    grade: gradeFromReach(coldReach),
+    rawScore: coldRaw,
+  };
 
   const top = actions.find((a) => a.kind === "positive" && a.contribution > 0);
   const headBit = top
@@ -771,7 +859,11 @@ export function scoreDraft(text: string): ScoreResult {
           features.format === "thread"
         ? ` ${FORMAT_META[features.format].blurb}`
         : "";
-  const headline = headlines[lane.id] + formatNote;
+  const split =
+    Math.abs(graphReach - coldReach) >= 12
+      ? ` Mutuals ${graph.grade} ${graphReach} · Cold For You ${cold.grade} ${coldReach}.`
+      : "";
+  const headline = headlines[lane.id] + formatNote + split;
 
   return {
     features,
@@ -782,6 +874,9 @@ export function scoreDraft(text: string): ScoreResult {
     rawScore,
     reach,
     grade,
+    graph,
+    cold,
+    mix,
     headline,
     disclaimer:
       "Phoenix predicts P(action) per viewer from their engagement history. Outrank estimates those probabilities from the draft, then multiplies by the published production weights. It is a coaching instrument, not the live ranker.",

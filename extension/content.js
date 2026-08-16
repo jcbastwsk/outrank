@@ -48,9 +48,16 @@
       body.innerHTML = `<p class="or-muted">Scoring…</p>`;
       return;
     }
-    const play = (state.plays && state.plays[0]) || null;
-    const lane = state.lane?.label || "";
+    const play = state.primary || (state.plays && state.plays[0]) || null;
     const fmt = state.format || "";
+    const mix = Array.isArray(state.mix)
+      ? state.mix
+          .slice(0, 3)
+          .map((v) => `${v.label} ${Math.round((v.weight || 0) * 100)}`)
+          .join(" · ")
+      : "";
+    const graph = state.graph;
+    const cold = state.cold;
     body.innerHTML = `
       ${
         state.accountRisk
@@ -58,14 +65,18 @@
           : ""
       }
       <div class="or-score">
-        <b>${state.reach}</b>
-        <span>${escapeHtml(state.grade || "")}${fmt ? ` · ${escapeHtml(fmt)}` : ""} · raw ${Number(state.rawScore).toFixed(2)}</span>
+        <b>${graph ? graph.reach : state.reach}</b>
+        <span>${escapeHtml((graph && graph.grade) || state.grade || "")} mutuals${fmt ? ` · ${escapeHtml(fmt)}` : ""}</span>
       </div>
-      <p class="or-lane">${escapeHtml([lane, fmt].filter(Boolean).join(" · "))}</p>
-      <p class="or-head-line">${escapeHtml(state.headline || "")}</p>
+      <p class="or-lane">Cold For You ${cold ? `${cold.reach} ${cold.grade}` : "—"}</p>
+      ${mix ? `<p class="or-lane">${escapeHtml(mix)}</p>` : ""}
       ${
         play
-          ? `<div class="or-play"><strong>${escapeHtml(play.title)}</strong>${escapeHtml(play.why)}</div>`
+          ? `<div class="or-play">${
+              play.excerpt
+                ? `<p class="or-head-line">“${escapeHtml(play.excerpt)}”</p>`
+                : ""
+            }<strong>${escapeHtml(play.title)}</strong>${escapeHtml(play.why)}</div>`
           : ""
       }
     `;
@@ -88,6 +99,12 @@
       if (t) texts.push(t);
     });
     return texts.join("\n\n");
+  }
+
+  async function getToken() {
+    if (!chrome.storage?.local) return "";
+    const stored = await chrome.storage.local.get({ apiToken: "" });
+    return stored.apiToken || "";
   }
 
   async function resolveApi() {
@@ -117,21 +134,43 @@
       });
       return;
     }
+    const token = await getToken();
+    if (!token) {
+      render({
+        error:
+          "Open outrank.coach (or your local app) once with this extension on, so we can attach your plan.",
+      });
+      return;
+    }
     try {
       const res = await fetch(`${base}/api/analyze`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ text }),
       });
+      const data = await res.json().catch(() => ({}));
+      if (data.billing?.token) {
+        chrome.storage?.local?.set({ apiToken: data.billing.token });
+      }
+      if (res.status === 401) {
+        render({
+          error:
+            data.message ||
+            "Open outrank.coach once with this extension on, so we can attach your plan.",
+        });
+        return;
+      }
       if (res.status === 402) {
-        const data = await res.json().catch(() => ({}));
         render({
           error: data.message || "Scout daily limit hit. Upgrade to Pro for unlimited scores.",
         });
         return;
       }
       if (!res.ok) throw new Error(`Outrank API ${res.status}`);
-      render(await res.json());
+      render(data);
     } catch {
       render({
         error: "Outrank answered, then failed. Check the dashboard tab.",

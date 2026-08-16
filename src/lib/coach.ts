@@ -12,14 +12,101 @@ export type Play = {
   title: string;
   why: string;
   source: string;
+  excerpt?: string;
 };
 
 export type CoachResult = ScoreResult & {
   plays: Play[];
+  primary: Play | null;
   firstHour: Play[];
   today: Play[];
   accountRisk: boolean;
 };
+
+const PLAY_PRIORITY = [
+  "dont-nuke",
+  "queer-costume",
+  "milady-costume",
+  "desk-split",
+  "off-voice",
+  "anon-operator",
+  "fan-desk",
+  "corp-desk",
+  "wall",
+  "article-announce",
+  "link-in-reply",
+  "hashtags",
+  "long-first-line",
+  "operator-cut",
+  "article-lede",
+  "keep-loop",
+  "scene-cut",
+  "queer-room",
+  "milady-room",
+  "reel-link",
+  "reel-bait",
+  "operator-ask",
+  "operator-screenshot",
+  "micro-or-essay",
+  "invite-reply",
+  "make-portable",
+  "cursed-keep",
+  "thin",
+  "good",
+];
+
+function firstLine(t: string) {
+  const line = t.split(/\n/)[0]?.trim() ?? "";
+  return line.length > 160 ? `${line.slice(0, 157)}…` : line;
+}
+
+function clipMatch(t: string, re: RegExp) {
+  const m = t.match(re);
+  if (!m) return "";
+  const s = m[0].trim();
+  return s.length > 160 ? `${s.slice(0, 157)}…` : s;
+}
+
+function excerptFor(id: string, text: string): string | undefined {
+  if (id === "dont-nuke") return undefined;
+  if (id === "link-in-reply") return clipMatch(text, /https?:\/\/\S+/i) || firstLine(text);
+  if (id === "hashtags") {
+    const tags = text.match(/#\w+/g);
+    return tags ? tags.slice(0, 4).join(" ") : undefined;
+  }
+  if (id === "article-announce" || id === "long-first-line" || id === "article-lede" || id === "wall" || id === "operator-cut") {
+    return firstLine(text);
+  }
+  if (id === "keep-loop" || id === "scene-cut" || id === "charged") {
+    return (
+      clipMatch(
+        text,
+        /(lied to|pretty sure|nobody (talks|says)|the thing about|i was wrong about|big time|wait until)/i,
+      ) || firstLine(text)
+    );
+  }
+  if (id === "milady-room" || id === "milady-costume") {
+    return clipMatch(text, /\b(milady|remilia|radbro)s?\b/i) || firstLine(text);
+  }
+  if (id === "cursed-keep") return firstLine(text);
+  if (id === "queer-room" || id === "queer-costume") {
+    return clipMatch(text, /\b(the gays|us gays|as a gay|gay ass|the girlies)\b/i) || firstLine(text);
+  }
+  return firstLine(text) || undefined;
+}
+
+function pickPrimary(plays: Play[], text: string): Play | null {
+  if (!plays.length) return null;
+  const never = plays.filter((p) => p.urgency === "never");
+  const pool = never.length ? never : plays;
+  const rank = (p: Play) => {
+    const i = PLAY_PRIORITY.indexOf(p.id);
+    return i === -1 ? 400 + (p.urgency === "now" ? 0 : 40) : i;
+  };
+  const chosen = [...pool].sort((a, b) => rank(a) - rank(b))[0];
+  const excerpt = excerptFor(chosen.id, text);
+  return excerpt ? { ...chosen, excerpt } : chosen;
+}
 
 export function isAccountRisk(score: ScoreResult): boolean {
   const report = score.actions.find((a) => a.id === "report")?.contribution ?? 0;
@@ -579,9 +666,12 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
     });
   }
 
+  const primary = f.isEmpty ? null : pickPrimary(plays, f.text);
+
   return {
     ...score,
-    plays,
+    plays: primary ? [primary, ...plays.filter((p) => p.id !== primary.id)] : plays,
+    primary,
     firstHour,
     today: todaysPlays(),
     accountRisk: isAccountRisk(score),
