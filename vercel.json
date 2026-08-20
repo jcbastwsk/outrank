@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/algo/watch",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}

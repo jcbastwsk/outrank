@@ -6,15 +6,23 @@ const API_CANDIDATES = [
   "http://penguin.linux.test:3000",
 ];
 
-async function probeApi(base) {
+async function getToken() {
+  if (!chrome.storage?.local) return "";
+  const stored = await chrome.storage.local.get({ apiToken: "" });
+  return stored.apiToken || "";
+}
+
+async function probeApi(base, sendToken = true) {
   const url = `${base.replace(/\/$/, "")}/api/billing/status`;
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 1500);
   try {
-    const res = await fetch(url, { signal: ctrl.signal });
+    const token = sendToken ? await getToken() : "";
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await fetch(url, { signal: ctrl.signal, headers });
     if (!res.ok) return null;
     const data = await res.json();
-    return { base: base.replace(/\/$/, ""), data };
+    return { base: base.replace(/\/$/, ""), data, token: Boolean(token) };
   } catch {
     return null;
   } finally {
@@ -35,5 +43,5 @@ async function findApi(preferred) {
 }
 
 if (typeof window !== "undefined") {
-  window.OutrankConnect = { API_CANDIDATES, probeApi, findApi };
+  window.OutrankConnect = { API_CANDIDATES, probeApi, findApi, getToken };
 }

@@ -7,13 +7,11 @@ import { Wordmark } from "./Brand";
 import { HandleChip } from "./HandleChip";
 
 const NAV = [
-  { href: "/app", label: "Command" },
   { href: "/app/coach", label: "Coach" },
+  { href: "/app/profile", label: "Profile" },
+  { href: "/app", label: "Next Moves" },
+  { href: "/app/results", label: "Results" },
   { href: "/app/radar", label: "Radar" },
-  { href: "/app/hood", label: "Hood" },
-  { href: "/app/curate", label: "Curate" },
-  { href: "/app/vibe", label: "Vibe" },
-  { href: "/app/identity", label: "Identity" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -62,7 +60,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           Privacy
         </Link>
         {" · "}
-        Estimates, not Phoenix. Not affiliated with X or xAI.
+        Not affiliated with X or xAI.
       </p>
     </div>
   );

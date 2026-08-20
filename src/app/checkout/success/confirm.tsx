@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ExtensionAttach } from "../../../components/ExtensionAttach";
 
 export function ConfirmCheckout({ sessionId }: { sessionId: string | null }) {
   const [state, setState] = useState<"wait" | "ok" | "err">("wait");
   const [plan, setPlan] = useState<string>("pro");
+  const [rail, setRail] = useState<"card" | "crypto">("card");
   const [message, setMessage] = useState("Confirming with Stripe…");
 
   useEffect(() => {
@@ -22,11 +24,17 @@ export function ConfirmCheckout({ sessionId }: { sessionId: string | null }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ session_id: sessionId }),
         });
-        const data = (await res.json()) as { plan?: string; error?: string };
+        const data = (await res.json()) as {
+          plan?: string;
+          rail?: string;
+          error?: string;
+        };
         if (cancelled) return;
         if (!res.ok) throw new Error(data.error || "Could not confirm");
         setPlan(data.plan || "pro");
+        setRail(data.rail === "crypto" ? "crypto" : "card");
         setState("ok");
+        window.dispatchEvent(new Event("outrank:attach"));
       } catch (e) {
         if (cancelled) return;
         setState("err");
@@ -55,9 +63,21 @@ export function ConfirmCheckout({ sessionId }: { sessionId: string | null }) {
   return (
     <div className="mt-6 space-y-6">
       <p className="text-lg text-[var(--muted)]">
-        Your <span className="text-[var(--ink)]">{plan}</span> subscription is
-        active. The coach and extension will use this browser&apos;s session.
+        {rail === "crypto" ? (
+          <>
+            Your <span className="text-[var(--ink)]">{plan}</span> month is
+            paid in stablecoin. It does not renew. Leave this tab open with
+            the extension installed so x.com scores use the paid plan.
+          </>
+        ) : (
+          <>
+            Your <span className="text-[var(--ink)]">{plan}</span> subscription
+            is active. Leave this tab open with the extension installed so
+            x.com scores use the paid plan.
+          </>
+        )}
       </p>
+      <ExtensionAttach />
       <Link href="/app" className="btn-gold inline-block px-6 py-3 text-sm">
         Open the command center
       </Link>

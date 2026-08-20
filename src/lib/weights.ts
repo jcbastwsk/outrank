@@ -1,6 +1,9 @@
 /**
- * Production ranking weights mirrored from
+ * Published feature-switch defaults mirrored from
  * https://github.com/xai-org/x-algorithm/blob/main/home-mixer/params/param.rs
+ *
+ * These are not accumulated event points. They multiply predicted
+ * per-viewer action probabilities. Do not read ratios as like-equivalents.
  *
  * Last published default sync in that file: 2026-08-12T04:09:22Z
  * Repo drop that made these public: 2026-08-13
@@ -92,7 +95,7 @@ export const WEIGHT_ROWS: WeightRow[] = [
     value: ACTION_WEIGHTS.shareViaCopyLink,
     kind: "positive",
     meaning:
-      "Someone copies the post URL. Highest positive weight in the published ranker — 40× a like.",
+      "Someone copies the post URL. Highest published positive coefficient in this file.",
   },
   {
     id: "reply",
@@ -100,7 +103,7 @@ export const WEIGHT_ROWS: WeightRow[] = [
     param: "ReplyWeight",
     value: ACTION_WEIGHTS.reply,
     kind: "positive",
-    meaning: "A public reply. 10× a like. The conversation engine of For You.",
+    meaning: "A public reply. Published coefficient 5.0. Not an event count.",
   },
   {
     id: "quote",
@@ -274,7 +277,7 @@ export const WEIGHT_ROWS: WeightRow[] = [
     param: "NotInterestedWeight",
     value: ACTION_WEIGHTS.notInterested,
     kind: "negative",
-    meaning: "'Show less' / not interested. ~86 likes of damage.",
+    meaning: "'Show less' / not interested. Large negative coefficient.",
   },
   {
     id: "muteAuthor",
@@ -282,7 +285,7 @@ export const WEIGHT_ROWS: WeightRow[] = [
     param: "MuteAuthorWeight",
     value: ACTION_WEIGHTS.muteAuthor,
     kind: "negative",
-    meaning: "A mute. Worse than a block in this ranker (~118 likes of damage).",
+    meaning: "A mute. Worse than a block among the published coefficients.",
   },
   {
     id: "report",
@@ -290,7 +293,7 @@ export const WEIGHT_ROWS: WeightRow[] = [
     param: "ReportWeight",
     value: ACTION_WEIGHTS.report,
     kind: "negative",
-    meaning: "A report. Catastrophic. ~468 likes of damage. Do not farm this.",
+    meaning: "A report. Catastrophic published coefficient. Do not farm this.",
   },
 ];
 

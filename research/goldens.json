@@ -1,0 +1,90 @@
+{
+  "samples": [
+    {
+      "label": "Operator",
+      "lane": "operator",
+      "grades": ["A", "S"],
+      "reachMin": 70,
+      "wall": false
+    },
+    {
+      "label": "Reel",
+      "lane": "reel",
+      "grades": ["A", "S"],
+      "reachMin": 70
+    },
+    {
+      "label": "Open loop",
+      "lane": "scene",
+      "format": "micro",
+      "grades": ["B", "A", "S"],
+      "reachMin": 60,
+      "openLoop": true
+    },
+    {
+      "label": "Milady",
+      "tribe": "milady",
+      "lane": "scene",
+      "forbidGrades": ["S"]
+    },
+    {
+      "label": "Cursed",
+      "lane": "cursed",
+      "cursed": true,
+      "grades": ["B", "A"]
+    },
+    {
+      "label": "Article",
+      "format": "article",
+      "wall": false,
+      "forbidGrades": ["F"],
+      "reachMin": 45
+    },
+    {
+      "label": "Long",
+      "format": "long",
+      "wall": false
+    },
+    {
+      "label": "Wall",
+      "wall": true,
+      "grades": ["D", "F"],
+      "reachMax": 40
+    },
+    {
+      "label": "Soft take",
+      "lane": "thin",
+      "grades": ["D", "F"]
+    },
+    {
+      "label": "Link dump",
+      "lane": "spam",
+      "grades": ["F"],
+      "reachMax": 20
+    }
+  ],
+  "locks": [
+    {
+      "id": "costume-fundraise",
+      "text": "gm milady. proud to announce we just raised $12m. What would you add?",
+      "costume": true,
+      "tribe": "milady",
+      "forbidGrades": ["S"],
+      "why": "Room sticker + operator skeleton must not print as S-tier."
+    },
+    {
+      "id": "generations-not-ratio",
+      "text": "Just dropped a 12 second film. No crew. No camera. 47 generations in Kling.\n\nWorkflow in the thread — comment FILM and I'll send it.",
+      "lane": "reel",
+      "forbidLanes": ["volatile"],
+      "why": "The word generations is not ratio-bait."
+    },
+    {
+      "id": "article-teaser",
+      "text": "I just wrote an article about how distribution is the product",
+      "ledeWeak": true,
+      "forbidGrades": ["A", "S"],
+      "why": "Announcing the piece is not the piece."
+    }
+  ]
+}

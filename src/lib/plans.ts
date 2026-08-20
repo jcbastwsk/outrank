@@ -5,55 +5,65 @@ export type Plan = {
   id: PlanId;
   name: string;
   priceCents: number;
+  yearCents: number;
   period: string;
   blurb: string;
   points: string[];
+  soon?: string[];
   highlight?: boolean;
   cta: string;
 };
 
+/** Display names. Internal ids stay scout/pro/studio so existing entitlements still match. */
+export function planLabel(id: PlanId) {
+  return id === "studio" ? "Agency" : id === "pro" ? "Pro" : "Radar";
+}
+
 export const PLANS: Plan[] = [
   {
     id: "scout",
-    name: "Scout",
+    name: "Radar",
     priceCents: 0,
+    yearCents: 0,
     period: "forever",
-    blurb: "Read the ranker.",
+    blurb: "The published ranking table.",
     points: [
-      "Published weight table",
-      "3 API / extension scores per day",
-      "Public algo changelog",
+      "Current numbers from the public X ranking file",
+      "A note if those numbers change",
+      "Three draft readings a day",
     ],
-    cta: "Open the weights",
+    cta: "Open Radar",
   },
   {
     id: "pro",
     name: "Pro",
-    priceCents: 1900,
+    priceCents: 2900,
+    yearCents: 29000,
     period: "/ month",
-    blurb: "Coach every draft.",
+    blurb: "The coach for one X account.",
     points: [
-      "Unlimited draft + extension scores",
-      "Chrome extension on x.com",
-      "Weight-change radar",
-      "First-hour playbook",
+      "A saved profile",
+      "Draft advice against your recent posts",
+      "A record of what happened",
+      "A note if the public ranking numbers change",
     ],
     highlight: true,
     cta: "Start Pro",
   },
   {
     id: "studio",
-    name: "Studio",
-    priceCents: 4900,
+    name: "Agency",
+    priceCents: 14900,
+    yearCents: 149000,
     period: "/ month",
-    blurb: "The whole desk.",
+    blurb: "Up to ten accounts.",
     points: [
       "Everything in Pro",
-      "5 accounts (coming next)",
-      "Under the Hood interpreter",
-      "Slack / email radar (coming next)",
+      "Ten accounts",
+      "Simple client reports",
     ],
-    cta: "Start Studio",
+    soon: ["Ten-account workspace", "Client PDF", "Slack notes"],
+    cta: "Start Agency",
   },
 ];
 
@@ -68,7 +78,7 @@ export function isPaidPlan(id: PlanId) {
 }
 
 export function canUseHood(id: PlanId) {
-  return id === "studio";
+  return id === "pro" || id === "studio";
 }
 
 export function unlimitedScores(id: PlanId) {

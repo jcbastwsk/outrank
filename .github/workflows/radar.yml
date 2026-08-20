@@ -1,0 +1,29 @@
+name: radar
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Diff live param.rs against snapshot
+        run: npm run rd:watch
+      - name: Ping production watch
+        if: always()
+        continue-on-error: true
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          AUTH=()
+          if [ -n "$CRON_SECRET" ]; then AUTH=(-H "Authorization: Bearer $CRON_SECRET"); fi
+          curl -fsS --max-time 20 "${AUTH[@]}" https://outrank.coach/api/algo/watch | tee /tmp/watch.json
+          grep -q '"state":"SYNCED"' /tmp/watch.json

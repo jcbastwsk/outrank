@@ -27,13 +27,30 @@ const vt = VT323({
 
 export const metadata: Metadata = {
   title: {
-    default: "Outrank — Algorithm radar for X",
-    template: "%s · Outrank",
+    default: "OUTRANK — Coaching for people who post on X",
+    template: "%s · OUTRANK",
   },
   description:
-    "X just published the For You ranking weights. Outrank watches every commit and coaches you, live, on how to get shown.",
+    "A coach for people who post on X. It remembers what you have already said and tells you whether the next post helps.",
   metadataBase: new URL(appUrl()),
   alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "OUTRANK",
+    title: "Build a body of work, not a content calendar",
+    description:
+      "A coach for people who post on X. It remembers what you have already said and tells you whether the next post helps.",
+    url: "/",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OUTRANK — Coaching for people who post on X",
+    description:
+      "A coach for people who post on X. It remembers what you have already said and tells you whether the next post helps.",
+    images: ["/opengraph-image"],
+  },
+  other: { outrank: "1" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { CheckoutButton } from "../../components/CheckoutButton";
+import { PricingGrid } from "../../components/PricingGrid";
 import { SiteFooter, SiteHeader } from "../../components/SiteHeader";
-import { PLANS } from "../../lib/plans";
-import { stripeMode } from "../../lib/stripe";
+import { billingOpen } from "../../lib/stripe";
 
 export default async function PricingPage({
   searchParams,
@@ -10,72 +9,37 @@ export default async function PricingPage({
   searchParams: Promise<{ canceled?: string }>;
 }) {
   const { canceled } = await searchParams;
-  const mode = stripeMode();
+  const open = billingOpen();
 
   return (
     <div className="flex min-h-full flex-col">
       <SiteHeader />
       <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-16">
-        <p className="mono text-xs uppercase tracking-[0.18em] text-[var(--gold)]">Pricing</p>
-        <h1 className="serif mt-3 text-5xl">Paid because the feed moves.</h1>
+        <p className="mono text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
+          Pricing
+        </p>
+        <h1 className="serif mt-3 text-5xl">Pricing</h1>
         <p className="mt-4 max-w-2xl text-lg text-[var(--muted)]">
-          The July bidirectional boost went 0 → 20 → 15 in two weeks. A static
-          blog post is stale before you finish it. The product is the watch.
+          Radar is free and shows the published ranking numbers. Pro is the
+          coach for one account. Agency is for up to ten accounts.
         </p>
         {canceled && (
           <p className="panel mt-6 px-4 py-3 text-sm text-[var(--muted)]">
             Checkout canceled. Nothing was charged.
           </p>
         )}
-        {mode === "test" && (
+        {!open && (
           <p className="panel mt-6 px-4 py-3 text-sm leading-6">
-            <span className="mono text-[var(--gold)]">Stripe test mode.</span>{" "}
-            Card{" "}
-            <span className="mono">4242 4242 4242 4242</span> — sixteen digits,
-            spaces optional. Expiry any future month. CVC any 3 digits. ZIP
-            any. The page must say TEST MODE.{" "}
-            <span className="mono">42424242</span> alone is 8 digits and
-            Safari rejects it as a pattern mismatch.
+            We are not taking payment yet. You can still set up a profile and
+            use the coach.
           </p>
         )}
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
-          {PLANS.map((p) => (
-            <div
-              key={p.id}
-              className="card flex flex-col p-6"
-              style={
-                p.highlight
-                  ? { borderColor: "var(--line-strong)", boxShadow: "0 0 0 1px rgba(245,185,66,0.2)" }
-                  : undefined
-              }
-            >
-              <h2 className="text-sm uppercase tracking-[0.16em] text-[var(--muted)]">
-                {p.name}
-              </h2>
-              <p className="serif mt-3 text-5xl">
-                {p.priceCents === 0 ? "$0" : `$${p.priceCents / 100}`}
-                <span className="text-lg text-[var(--muted)]">{p.period}</span>
-              </p>
-              <p className="mt-2 text-sm text-[var(--muted)]">{p.blurb}</p>
-              <ul className="mt-6 flex-1 space-y-3 text-sm text-[var(--muted)]">
-                {p.points.map((pt) => (
-                  <li key={pt}>· {pt}</li>
-                ))}
-              </ul>
-              {p.id === "scout" ? (
-                <Link href="/app" className="btn-ghost mt-8 py-3 text-center text-sm">
-                  {p.cta}
-                </Link>
-              ) : (
-                <CheckoutButton plan={p.id} highlight={p.highlight}>
-                  {p.cta}
-                </CheckoutButton>
-              )}
-            </div>
-          ))}
-        </div>
+        <PricingGrid billingOpen={open} />
         <p className="mt-10 max-w-2xl text-sm leading-6 text-[var(--muted)]">
-          Monthly Stripe subscription.{" "}
+          Card is a Stripe subscription. USDC (via Stripe) buys the current
+          month and does not renew. Recurring USDC is not on this Stripe
+          account. White-label reports and the 10-account desk are forthcoming
+          — Agency buyers are design partners until those ship.{" "}
           <Link href="/terms" className="text-[var(--cyan)] underline">
             Terms
           </Link>
@@ -83,8 +47,7 @@ export default async function PricingPage({
           <Link href="/privacy" className="text-[var(--cyan)] underline">
             Privacy
           </Link>
-          . Cancel in Billing. We will not help anyone evade X visibility or
-          spam systems.
+          . Cancel in Billing.
         </p>
       </main>
       <SiteFooter />

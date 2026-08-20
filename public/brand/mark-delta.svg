@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="OUTRANK">
+  <rect width="128" height="128" fill="#070016"/>
+  <g fill="none" stroke-linejoin="miter" stroke-linecap="square">
+    <path d="M34 78 H94" stroke="#c8c4bc" stroke-width="3.2"/>
+    <path d="M44 76 L64 36 L84 76 Z" fill="#d4b44a" stroke="#f0d878" stroke-width="1.2"/>
+    <path d="M52 72 L64 48 L76 72 Z" fill="#070016"/>
+  </g>
+</svg>

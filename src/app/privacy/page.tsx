@@ -32,8 +32,10 @@ export default function PrivacyPage() {
         <strong>You type it.</strong> Drafts you paste into the coach. Text the
         extension reads from X’s compose box and POSTs to{" "}
         <span className="mono">/api/analyze</span>. Past posts you drop into
-        Vibe. Under the Hood JSON you paste. Curator cases if you use that
-        desk.
+        Room. Under the Hood JSON you paste. Curator cases if you use that
+        desk. If you ask for algo-change alerts, the email you typed.
+        Candidate drafts you save, the prediction, and the outcome label you
+        pick — stored on the server as the residual history for your desk.
       </p>
       <p>
         <strong>Scoring those drafts.</strong> The analyze API scores the text
@@ -42,24 +44,31 @@ export default function PrivacyPage() {
         site — that is hosting, not a scrapbook.
       </p>
       <p>
-        <strong>Billing.</strong> If you pay, Stripe takes your email, card,
-        and billing address. We get back a customer id, a subscription id, a
-        plan, and the email Stripe already has. We store that in a signed
-        cookie on your browser and, when the server can write a file, in a
-        billing record. We never receive your full card number.
+        <strong>Billing.</strong> If you pay, Stripe takes your email, billing
+        address, and either a card or a crypto-wallet payment (USDC and other
+        stablecoins Stripe lists). We get back a customer id, a plan, the
+        email Stripe already has, and a subscription id when you pay by card.
+        We store that in a signed cookie on your browser and, when the server
+        can write a file, in a billing record. The Chrome extension stores a
+        signed copy of that plan (not your card or wallet) so scores on x.com
+        can use the same entitlement. We never receive your full card number
+        or wallet seed.
       </p>
       <p>
         <strong>Cookies we set.</strong>{" "}
         <span className="mono">outrank_plan</span> (which plan this browser
         unlocked), <span className="mono">outrank_usage</span> (Scout’s daily
         score count), <span className="mono">outrank_curator</span> (curator
-        unlock). They are first-party, httpOnly, and exist so the product
-        works. They are not an ad network.
+        unlock), <span className="mono">outrank_desk</span> (which residual
+        desk this browser is). They are first-party, httpOnly, and exist so
+        the product works. They are not an ad network.
       </p>
       <p>
-        <strong>On your machine only.</strong> Vibe profile, the @ you typed,
-        curator copies, the identity workshop (name, bio, pin, PFP data URL),
-        and a joke hit counter live in{" "}
+        <strong>On your machine only.</strong> The Strategic Profile
+        (ambition, audience, territory, outcomes, voice lock, beliefs,
+        learnings), the coach conversation log, Room profile, the @ you
+        typed, curator copies, and the identity workshop (name, bio, pin, PFP
+        data URL) live in{" "}
         <span className="mono">localStorage</span>. Avatar files are scored in
         the browser canvas and are not uploaded. We do not fetch your X
         profile. Clear site data and they are gone. We cannot read your
@@ -75,10 +84,14 @@ export default function PrivacyPage() {
       <h2>3. Why</h2>
       <ul>
         <li>Score and coach the text you asked us to score.</li>
-        <li>Charge for Pro/Studio and remember that you paid.</li>
-        <li>Cap Scout so the free tier is not an open proxy.</li>
+        <li>Charge for Pro/Agency and remember that you paid.</li>
+        <li>Cap Radar so the free tier is not an open proxy.</li>
         <li>Explain Under the Hood JSON you pasted.</li>
         <li>Stop abuse and keep the lights on.</li>
+        <li>
+          Email you when a published For You default moves, if you asked
+          for that. Not a newsletter. Unsub is on every mail.
+        </li>
       </ul>
       <p>
         That is the list. If we ever train a model on your drafts, we will say
@@ -95,6 +108,20 @@ export default function PrivacyPage() {
         <li>
           <strong>Vercel</strong> — hosts the site and the APIs. Request logs
           live on their infrastructure.
+        </li>
+        <li>
+          <strong>xAI</strong> — only if the conversational coach is
+          connected (<span className="mono">XAI_API_KEY</span> on the
+          server). Then the message you just typed, a short profile summary,
+          and recent coach turns go to xAI to produce the reply. We do not
+          send that traffic when the key is absent; the local coach runs
+          instead.{" "}
+          <a href="https://x.ai/legal/privacy-policy">x.ai privacy</a>
+        </li>
+        <li>
+          <strong>Resend</strong> — only if algo-change alerts are turned on
+          and you subscribed. They deliver the mail.{" "}
+          <a href="https://resend.com/legal/privacy-policy">resend.com/privacy</a>
         </li>
         <li>
           <strong>You, on purpose</strong> — if you copy a curator pack or a
@@ -148,7 +175,7 @@ export default function PrivacyPage() {
 
       <h2>9. Security</h2>
       <p>
-        HTTPS. Signed cookies. Stripe for cards. That is the stack. No product
+        HTTPS. Signed cookies. Stripe for cards and stablecoins. That is the stack. No product
         this size should promise you a fortress. Do not paste passwords or
         private keys into the coach.
       </p>

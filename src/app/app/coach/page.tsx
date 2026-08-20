@@ -1,19 +1,25 @@
-import { DraftCoach } from "../../../components/DraftCoach";
+import { CoachRoom } from "../../../components/CoachRoom";
 
-export default function CoachPage() {
+export default async function CoachPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ analyze?: string; demo?: string }>;
+}) {
+  const { analyze, demo } = await searchParams;
+  const startAnalyze = analyze === "1" || analyze === "post" || demo === "1";
+
   return (
     <div className="space-y-6">
       <div>
-        <p className="mono text-xs uppercase tracking-[0.18em] text-[var(--gold)]">Coach</p>
-        <h1 className="serif text-4xl">Score the post before it ships</h1>
+        <p className="mono text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
+          Coach
+        </p>
+        <h1 className="serif text-4xl">Paste a draft</h1>
         <p className="mt-2 max-w-2xl text-[var(--muted)]">
-          Estimates Phoenix action probabilities from the text, then applies
-          the published production weights. Micro, short, long, article, and
-          thread are not the same candidate. The Chrome extension does the
-          same thing on x.com.
+          Advice uses your profile and the posts you have already saved.
         </p>
       </div>
-      <DraftCoach />
+      <CoachRoom startAnalyze={startAnalyze} demo={demo === "1"} />
     </div>
   );
 }

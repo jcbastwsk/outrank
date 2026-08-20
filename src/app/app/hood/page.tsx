@@ -9,16 +9,15 @@ export default async function HoodPage() {
     return (
       <div className="card max-w-xl p-8">
         <p className="mono text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
-          Studio
+          Under the Hood
         </p>
-        <h1 className="serif mt-2 text-4xl">Under the Hood is on Studio</h1>
+        <h1 className="serif mt-2 text-4xl">The suppression receipt is on Pro.</h1>
         <p className="mt-3 text-[var(--muted)] leading-7">
-          Visibility labels can drop you from For You. Studio maps X&apos;s
-          transparency export onto the published filter rules. Pro keeps the
-          coach and radar.
+          Visibility labels can drop you from For You. Drop the JSON. Get
+          which labels are actually hiding the account. Radar stays free.
         </p>
         <Link href="/pricing" className="btn-gold mt-6 inline-block px-5 py-2 text-sm">
-          See Studio · $49/mo
+          See Pro · $29/mo
         </Link>
       </div>
     );

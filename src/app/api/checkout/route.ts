@@ -5,6 +5,7 @@ import {
   setEntitlement,
 } from "../../../lib/billing";
 import {
+  billingOpen,
   createCheckoutSession,
   stripeConfigured,
 } from "../../../lib/stripe";
@@ -12,6 +13,8 @@ import {
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as {
     plan?: string;
+    rail?: string;
+    interval?: string;
     dev?: boolean;
   };
   const plan = body.plan as PlanId | undefined;
@@ -21,10 +24,22 @@ export async function POST(req: Request) {
   if (plan === "scout") {
     return NextResponse.json({ url: "/app" });
   }
+  const rail = body.rail === "crypto" ? "crypto" : "card";
+  const interval = body.interval === "year" ? "year" : "month";
+
+  if (!billingOpen()) {
+    return NextResponse.json(
+      {
+        error: "billing_closed",
+        message: "Checkout opens when live billing is configured.",
+      },
+      { status: 403 },
+    );
+  }
 
   if (stripeConfigured()) {
     try {
-      const session = await createCheckoutSession(plan);
+      const session = await createCheckoutSession(plan, rail, interval);
       if (!session.url) {
         return NextResponse.json(
           { error: "Stripe did not return a checkout URL" },

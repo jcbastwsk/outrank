@@ -386,7 +386,7 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
       urgency: "now",
       title: "This isn't your room",
       why: `Your last ${vibe.samples} posts read as ${vibe.aesthetic}. This draft is ${score.lane.label}. Phoenix already has a viewer-side model of you. Costume-switching looks like a different account.`,
-      source: "Per-viewer Phoenix + vibe profile",
+      source: "Per-viewer Phoenix + room read",
     });
   }
 
@@ -434,7 +434,7 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
       plays.push({
         id: "queer-costume",
         urgency: "never",
-        title: "That's a costume, not a vibe",
+        title: "That's a costume",
         why: "Operator skeleton plus a room slur reads as extraction. The room will mute it. The paying buyer steals unfinished one-breath craft — not the in-joke.",
         source: "MuteAuthorWeight + scene graph",
       });
@@ -455,7 +455,7 @@ export function coachDraft(score: ScoreResult, vibe?: VibeProfile | null): Coach
       plays.push({
         id: "milady-costume",
         urgency: "never",
-        title: "That's a costume, not a vibe",
+        title: "That's a costume",
         why: "Operator skeleton plus a milady sticker reads as extraction. The room will mute it. The paying buyer should steal unfinished one-breath craft from this scene — not the skin.",
         source: "MuteAuthorWeight + scene graph",
       });

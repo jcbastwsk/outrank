@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { planLabel, type PlanId } from "../lib/plans";
 
 type Status = {
-  plan: "scout" | "pro" | "studio";
+  plan: PlanId;
   stripe: boolean;
   usage: { remaining: number | null; cap: number | null };
 };
@@ -30,8 +31,7 @@ export function BillingBar() {
   if (status.plan === "scout") {
     return (
       <Link href="/pricing" className="btn-gold px-3 py-1.5 text-xs">
-        Upgrade
-        {status.usage.remaining != null ? ` · ${status.usage.remaining} left` : ""}
+        Pro
       </Link>
     );
   }
@@ -39,7 +39,7 @@ export function BillingBar() {
   return (
     <div className="flex items-center gap-2">
       <span className="tab text-[var(--gold)]">
-        {status.plan}
+        {planLabel(status.plan)}
       </span>
       <ManageBilling />
     </div>

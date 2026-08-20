@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start --hostname 0.0.0.0 --port 3000",
     "lint": "eslint",
-    "sync-algo": "node scripts/sync-algo.mjs"
+    "sync-algo": "node scripts/sync-algo.mjs",
+    "rd:fixtures": "tsx scripts/rd-fixtures.ts",
+    "rd:watch": "tsx scripts/rd-watch.ts",
+    "test:judgment": "tsx scripts/test-judgment.ts"
   },
   "dependencies": {
     "next": "16.3.1",
@@ -23,6 +26,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.12",
     "typescript": "^5"
   }
 }

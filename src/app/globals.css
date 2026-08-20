@@ -409,6 +409,14 @@ a {
   font-weight: 600;
 }
 
+p strong,
+li strong,
+td strong,
+.hit {
+  color: var(--ink);
+  font-weight: 650;
+}
+
 input,
 textarea,
 select {

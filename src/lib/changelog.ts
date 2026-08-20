@@ -5,28 +5,32 @@ export type AlgoEvent = {
   summary: string;
   whatToDo: string;
   source: string;
+  /** Show on Radar. Pipeline history stays off the instrument. */
+  radar?: boolean;
 };
 
 export const ALGO_CHANGELOG: AlgoEvent[] = [
   {
     date: "2026-08-13",
-    title: "Production weights and visibility filtering go public",
+    title: "X publishes ranking source and feature-switch defaults",
     impact: "transparency",
     summary:
-      "xai-org/x-algorithm expands 10–15×. home-mixer/params/param.rs now publishes the live-default action weights. Visibility filtering, Scarecrow/Botmaker, Agatha, SimClusters, and Phoenix training code ship. Under the Hood report launches for eligible accounts.",
+      "param.rs publishes named coefficients used to combine predicted viewer actions. They are not accumulated event points.",
     whatToDo:
-      "Treat the published weights as the source of truth. Recalibrate every playbook that still cites the 2023 Heavy Ranker numbers (those are stale).",
-    source: "https://github.com/xai-org/x-algorithm + TechCrunch 2026-08-13",
+      "Treat the public file as a dated snapshot of defaults, not a live switch table for every viewer.",
+    source: "https://techcrunch.com/2026/08/13/x-open-sources-its-ranking-algorithm-letting-users-see-if-theyve-been-shadowbanned/",
+    radar: true,
   },
   {
     date: "2026-07-24",
     title: "Bidirectional follow reply boost 20 → 15",
     impact: "weights",
     summary:
-      "After the World Cup weekend, X cut BidirectionalFollowReplyWeightBoost from 20.0 to 15.0 so more OON conversation (people you don't mutually follow) could surface.",
+      "BidirectionalFollowReplyWeightBoost cut 20 → 15 so more out-of-network conversation could surface.",
     whatToDo:
-      "Mutuals still matter — effective reply weight is 5+15=20, not 25. Originals only; replies and reposts never got this boost.",
+      "Effective mutual reply is 20, not 25. Originals only. Replies and reposts never had the boost.",
     source: "docs/BIDIRECTIONAL_BOOST_CHANGE.md",
+    radar: true,
   },
   {
     date: "2026-07-13",
@@ -35,7 +39,7 @@ export const ALGO_CHANGELOG: AlgoEvent[] = [
     summary:
       "Broad launch of BidirectionalFollowReplyWeightBoost=20 on original posts from accounts you mutually follow. Dwell boost was tested and not shipped (still 0).",
     whatToDo:
-      "Prioritize original posts over reply-guy volume if you want the boost. Build a real mutual graph in your niche.",
+      "Originals to mutuals, not reply-guy volume. Dwell boost was tested and left at 0.",
     source: "docs/BIDIRECTIONAL_BOOST_CHANGE.md",
   },
   {
@@ -68,6 +72,10 @@ export const ALGO_CHANGELOG: AlgoEvent[] = [
     source: "github.com/xai-org/x-algorithm",
   },
 ];
+
+export function radarEvents() {
+  return ALGO_CHANGELOG.filter((e) => e.radar);
+}
 
 export const WATCHED_PARAMS = [
   "FavoriteWeight",

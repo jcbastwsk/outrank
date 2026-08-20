@@ -99,16 +99,22 @@ export default function TermsPage() {
 
       <h2>6. Money</h2>
       <p>
-        Scout is free and capped. Pro is $19/month. Studio is $49/month. Those
-        are the prices on <Link href="/pricing">/pricing</Link> unless checkout
-        shows a different number — checkout wins.
+        Radar (internally Scout) is free and capped. Pro is $29/month or
+        $290/year. Agency (internally Studio) is $149/month or $1,490/year.
+        Those are the prices on <Link href="/pricing">/pricing</Link> unless
+        checkout shows a different number — checkout wins.
       </p>
       <p>
-        Paid plans are <strong>subscriptions</strong>. Stripe charges you every
-        month until you cancel. Cancel in the Billing portal (the “Billing”
-        control in the app, which is Stripe Customer Portal). Cancellation
-        stops the next charge. You keep the plan until the period you already
-        paid for ends, then you drop to Scout.
+        If you subscribe to algo-change alerts we email you only when a
+        published For You default moves. That is not a marketing list.
+        Unsubscribe is on every mail.
+      </p>
+      <p>
+        Paid plans billed to a card are <strong>subscriptions</strong>. Stripe
+        charges you every month until you cancel. Cancel in the Billing portal
+        (the “Billing” control in the app, which is Stripe Customer Portal).
+        Cancellation stops the next charge. You keep the plan until the period
+        you already paid for ends, then you drop to Scout.
       </p>
       <p>
         <strong>No refunds</strong> for unused days, change of mind, X changing
@@ -117,9 +123,15 @@ export default function TermsPage() {
         reverse that charge.
       </p>
       <p>
-        Stripe processes the card. Their terms apply to the payment itself. We
-        never see your full card number. A failed payment can drop you to Scout
-        without a funeral.
+        You can also pay one month in USDC (or another stablecoin Stripe
+        accepts) through Stripe Checkout. That is a one-time payment, not a
+        subscription. It does not auto-renew. When the month ends you drop to
+        Scout unless you pay again or start a card subscription.
+      </p>
+      <p>
+        Stripe processes the card or the wallet payment. Their terms apply to
+        the payment itself. We never see your full card number or wallet seed.
+        A failed payment can drop you to Scout without a funeral.
       </p>
       <p>
         If we change the price we will say so before we charge the new amount.
@@ -153,8 +165,8 @@ export default function TermsPage() {
       <p>
         If a court will not let us exclude something, our total liability to
         you is capped at what you paid us in the 90 days before the claim, or
-        $49, whichever is more. That cap is the deal. Do not use a $19 tool as
-        if it were insurance.
+        $149, whichever is more. That cap is the deal. This is a coaching and
+        reporting instrument, not a guarantee of reach.
       </p>
       <p>
         If you use Outrank to break X’s rules or the law and that blows back on

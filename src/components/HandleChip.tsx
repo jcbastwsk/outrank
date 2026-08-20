@@ -59,17 +59,8 @@ export function HandleChip({ compact = false }: { compact?: boolean }) {
         }
         aria-label="Your X handle"
       />
-      {read && (
-        <span
-          className={
-            compact
-              ? "hidden text-[10px] uppercase tracking-[0.12em] text-[var(--gold)] lg:inline"
-              : "mt-2 block text-xs text-[var(--gold)]"
-          }
-          title={read.blurb}
-        >
-          {read.label}
-        </span>
+      {!compact && read?.blurb && (
+        <span className="mt-2 block text-xs text-[var(--muted)]">{read.blurb}</span>
       )}
     </label>
   );

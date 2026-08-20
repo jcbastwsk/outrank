@@ -21,10 +21,14 @@ export async function POST(req: Request) {
     expand: ["subscription"],
   });
 
-  if (session.mode !== "subscription") {
-    return NextResponse.json({ error: "Not a subscription session" }, { status: 400 });
+  const rail =
+    session.metadata?.rail === "crypto" || session.mode === "payment"
+      ? "crypto"
+      : "card";
+  if (session.mode !== "subscription" && session.mode !== "payment") {
+    return NextResponse.json({ error: "Unexpected checkout mode" }, { status: 400 });
   }
-  if (session.status !== "complete" && session.payment_status === "unpaid") {
+  if (session.payment_status === "unpaid" || session.status === "expired") {
     return NextResponse.json({ error: "Checkout not complete" }, { status: 402 });
   }
 
@@ -62,5 +66,9 @@ export async function POST(req: Request) {
     }),
   );
 
-  return NextResponse.json({ plan, email: session.customer_details?.email });
+  return NextResponse.json({
+    plan,
+    rail,
+    email: session.customer_details?.email,
+  });
 }

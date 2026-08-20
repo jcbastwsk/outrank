@@ -200,7 +200,7 @@ export function DraftCoach({ compact = false }: { compact?: boolean }) {
           {result.features.isEmpty
             ? "Waiting"
             : posted
-              ? "First-hour playbook"
+              ? "First hour"
               : "Do this before you post"}
         </p>
         {result.features.isEmpty ? (

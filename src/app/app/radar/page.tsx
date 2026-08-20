@@ -1,70 +1,108 @@
-import { ALGO_CHANGELOG } from "../../../lib/changelog";
-import { ALGO_SOURCE, WEIGHT_ROWS } from "../../../lib/weights";
+import { radarEvents } from "../../../lib/changelog";
+import {
+  fetchLiveDiff,
+  standingOrder,
+  watchedKnobs,
+} from "../../../lib/radar";
+import { ALGO_SOURCE } from "../../../lib/weights";
 import { RadarClient } from "./radar-client";
 
-export default function RadarPage() {
+export const dynamic = "force-dynamic";
+
+export default async function RadarPage() {
+  const initial = await fetchLiveDiff();
+  const standing = standingOrder();
+  const knobs = watchedKnobs();
+  const events = radarEvents();
+
   return (
     <div className="space-y-8">
       <div>
-        <p className="mono text-xs uppercase tracking-[0.18em] text-[var(--gold)]">Radar</p>
-        <h1 className="serif text-4xl">Every published move</h1>
+        <p className="mono text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
+          Radar
+        </p>
+        <h1 className="serif text-4xl">Published ranking numbers</h1>
         <p className="mt-2 max-w-2xl text-[var(--muted)]">
-          We treat {ALGO_SOURCE.file} as a production config file. When X
-          changes a default, the playbook changes.
+          X published the default scores it uses to rank posts, in{" "}
+          {ALGO_SOURCE.file}. We keep a copy and check the public file for
+          changes. These are not live settings for every viewer.
         </p>
       </div>
 
-      <RadarClient />
+      <RadarClient initial={initial} />
+
+      <section>
+        <h2 className="serif text-2xl">Current numbers</h2>
+        <div className="mt-4 overflow-hidden card">
+          <table className="w-full text-sm">
+            <thead className="text-left text-[11px] uppercase tracking-[0.12em] text-[var(--muted)]">
+              <tr>
+                <th className="px-5 py-3">Knob</th>
+                <th className="px-5 py-3">Now</th>
+                <th className="px-5 py-3">Order</th>
+              </tr>
+            </thead>
+            <tbody>
+              {standing.map((line) => (
+                <tr key={line.knob} className="border-t border-[var(--line)] align-top">
+                  <td className="px-5 py-3">{line.knob}</td>
+                  <td className="mono px-5 py-3 text-[var(--gold)]">{line.value}</td>
+                  <td className="px-5 py-3 text-[var(--muted)]">{line.order}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className="space-y-4">
-        {ALGO_CHANGELOG.map((ev) => (
+        <h2 className="serif text-2xl">Last moves</h2>
+        {events.map((ev) => (
           <article key={ev.date + ev.title} className="card p-6">
-            <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-              <span className="text-[var(--gold)]">{ev.date}</span>
-              <span>{ev.impact}</span>
+            <div className="mono text-[12px] uppercase tracking-[0.14em] text-[var(--gold)]">
+              {ev.date}
             </div>
-            <h2 className="mt-2 text-2xl">{ev.title}</h2>
+            <h3 className="mt-2 text-xl">{ev.title}</h3>
             <p className="mt-3 leading-7 text-[var(--muted)]">{ev.summary}</p>
             <p className="mt-3 leading-7">{ev.whatToDo}</p>
-            <p className="mono mt-3 text-xs text-[var(--muted)]">{ev.source}</p>
           </article>
         ))}
       </section>
 
       <section className="card overflow-hidden">
         <div className="border-b border-[var(--line)] px-5 py-4 text-sm">
-          Full snapshot · {WEIGHT_ROWS.length} published knobs
+          Watched knobs · {knobs.length}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left text-[11px] uppercase tracking-[0.12em] text-[var(--muted)]">
               <tr>
-                <th className="px-5 py-3">Param</th>
+                <th className="px-5 py-3">Knob</th>
                 <th className="px-5 py-3">Value</th>
-                <th className="px-5 py-3">Why it matters</th>
+                <th className="px-5 py-3">Play</th>
               </tr>
             </thead>
             <tbody>
-              {WEIGHT_ROWS.map((w) => (
-                <tr key={w.id} className="border-t border-[var(--line)] align-top">
+              {knobs.map((k) => (
+                <tr key={k.param} className="border-t border-[var(--line)] align-top">
                   <td className="px-5 py-3">
-                    <div>{w.label}</div>
-                    <div className="mono text-[11px] text-[var(--muted)]">{w.param}</div>
+                    <div>{k.label}</div>
+                    <div className="mono text-[11px] text-[var(--muted)]">{k.param}</div>
                   </td>
                   <td
                     className="mono px-5 py-3"
                     style={{
                       color:
-                        w.kind === "negative"
+                        k.kind === "negative"
                           ? "var(--bad)"
-                          : w.kind === "boost"
+                          : k.kind === "boost"
                             ? "var(--gold)"
                             : "var(--ink)",
                     }}
                   >
-                    {w.value}
+                    {k.value}
                   </td>
-                  <td className="px-5 py-3 text-[var(--muted)]">{w.meaning}</td>
+                  <td className="px-5 py-3 text-[var(--muted)]">{k.play}</td>
                 </tr>
               ))}
             </tbody>

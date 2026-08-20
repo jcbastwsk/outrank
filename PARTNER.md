@@ -55,9 +55,9 @@ The mutual-follow reply boost went 0 → 20 → 15 in two weeks (July 2026). Tha
 
 | Plan | Price | What’s in |
 | --- | --- | --- |
-| Scout | $0 | Weights, changelog, 3 API/extension scores per day |
-| Pro | $19/mo | Unlimited scores, extension, radar |
-| Studio | $49/mo | Pro + Under the Hood interpreter |
+| Radar | $0 | Weights, changelog, 3 draft scores/day |
+| Pro | $29/mo | Coach + extension, one account |
+| Agency | $149/mo | Pro + 10 accounts (white-label / Slack forthcoming) |
 
 Stripe Checkout is wired. Test mode works once `STRIPE_SECRET_KEY` is in `.env.local`. No live charges yet.
 
